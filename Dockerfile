@@ -12,20 +12,17 @@ RUN dotnet tool restore
 COPY . ./
 RUN dotnet publish -c Release -o out
 
+# Generate migration bundle
+RUN dotnet ef migrations bundle -o out/efbundle --self-contained
+
 # Build runtime image
-FROM mcr.microsoft.com/dotnet/sdk:8.0
+FROM mcr.microsoft.com/dotnet/aspnet:8.0
 WORKDIR /app
 COPY --from=build /app/out .
-COPY --from=build /app/*.csproj ./
-COPY --from=build /app/Migrations ./Migrations
-COPY --from=build /app/.config/dotnet-tools.json .config/
 
 # Expose port (Railway will set PORT env variable)
 EXPOSE 8080
 ENV ASPNETCORE_URLS=http://+:8080
-
-# Install EF Core tools from manifest
-RUN dotnet tool restore
 
 # Create a startup script to handle PORT variable and run migrations
 RUN echo '#!/bin/sh\n\
@@ -33,7 +30,7 @@ if [ ! -z "$PORT" ]; then\n\
   export ASPNETCORE_URLS="http://+:$PORT"\n\
 fi\n\
 echo "Running database migrations..."\n\
-dotnet ef database update --no-build || echo "Migration failed, continuing..."\n\
+./efbundle --connection "$DATABASE_URL" || echo "Migration failed, continuing..."\n\
 echo "Starting application..."\n\
 dotnet KLDShop.dll' > /app/start.sh && chmod +x /app/start.sh
 
