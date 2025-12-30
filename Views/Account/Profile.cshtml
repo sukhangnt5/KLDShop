@@ -1,0 +1,330 @@
+@model User
+
+@{
+    ViewData["Title"] = "Hồ Sơ Người Dùng - KLDShop";
+}
+
+<div class="container py-5">
+    <div class="row">
+        <!-- Sidebar Menu -->
+        <div class="col-md-3 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-person-circle"></i> Tài Khoản
+                    </h5>
+                </div>
+                <div class="list-group list-group-flush">
+                    <a href="@Url.Action("Profile", "Account")" class="list-group-item list-group-item-action active">
+                        <i class="bi bi-person"></i> Hồ Sơ Cá Nhân
+                    </a>
+                    <a href="#changePassword" class="list-group-item list-group-item-action" onclick="toggleChangePassword()">
+                        <i class="bi bi-key"></i> Đổi Mật Khẩu
+                    </a>
+                    <a href="@Url.Action("MyOrders", "Order")" class="list-group-item list-group-item-action">
+                        <i class="bi bi-bag"></i> Đơn Hàng Của Tôi
+                    </a>
+                    <form method="post" action="@Url.Action("Logout", "Account")" style="display: inline;">
+                        <button type="submit" class="list-group-item list-group-item-action text-danger" style="border: none; background: none; width: 100%; text-align: left; padding: 0.75rem 1rem;">
+                            <i class="bi bi-box-arrow-right"></i> Đăng Xuất
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="col-md-9">
+            <!-- Messages -->
+            @if (ViewBag.Message != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="bi bi-check-circle-fill"></i> @ViewBag.Message
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+
+            @if (!ViewData.ModelState.IsValid)
+            {
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="bi bi-exclamation-circle-fill"></i>
+                    @foreach (var modelState in ViewData.ModelState.Values)
+                    {
+                        @foreach (var error in modelState.Errors)
+                        {
+                            <div>@error.ErrorMessage</div>
+                        }
+                    }
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+
+            <!-- Profile Information Card -->
+            <div class="card shadow-sm mb-4" id="profileCard">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-person"></i> Thông Tin Cá Nhân
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" action="@Url.Action("UpdateProfile", "Account")">
+                        <input type="hidden" name="userId" value="@Model.UserId">
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">Tên Đăng Nhập</label>
+                                <input type="text" class="form-control" value="@Model.Username" disabled>
+                                <small class="text-muted">Không thể thay đổi</small>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">Email</label>
+                                <input type="email" class="form-control" value="@Model.Email" disabled>
+                                <small class="text-muted">Không thể thay đổi</small>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Họ Tên <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" name="fullName" value="@Model.FullName" required>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">Số Điện Thoại</label>
+                                <input type="tel" class="form-control" name="phoneNumber" value="@Model.PhoneNumber">
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">Giới Tính</label>
+                                <select class="form-select" name="gender">
+                                    <option value="">-- Chọn --</option>
+                                    @if (Model.Gender == "Male")
+                                    {
+                                        <option value="Male" selected>Nam</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="Male">Nam</option>
+                                    }
+                                    @if (Model.Gender == "Female")
+                                    {
+                                        <option value="Female" selected>Nữ</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="Female">Nữ</option>
+                                    }
+                                    @if (Model.Gender == "Other")
+                                    {
+                                        <option value="Other" selected>Khác</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="Other">Khác</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Ngày Sinh</label>
+                            <input type="date" class="form-control" name="dateOfBirth" value="@Model.DateOfBirth?.ToString("yyyy-MM-dd")">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Địa Chỉ</label>
+                            <input type="text" class="form-control" name="address" value="@Model.Address">
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label fw-bold">Tỉnh/Thành Phố</label>
+                                <input type="text" class="form-control" name="city" value="@Model.City">
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label fw-bold">Quận/Huyện</label>
+                                <input type="text" class="form-control" name="district" value="@Model.District">
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label fw-bold">Phường/Xã</label>
+                                <input type="text" class="form-control" name="ward" value="@Model.Ward">
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Mã Bưu Chính</label>
+                            <input type="text" class="form-control" name="postalCode" value="@Model.PostalCode">
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-circle"></i> Lưu Thay Đổi
+                            </button>
+                            <button type="reset" class="btn btn-outline-secondary">
+                                <i class="bi bi-x-circle"></i> Hủy
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Change Password Card -->
+            <div class="card shadow-sm" id="changePasswordCard" style="display: none;">
+                <div class="card-header bg-warning text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-key"></i> Đổi Mật Khẩu
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" action="@Url.Action("ChangePassword", "Account")">
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Mật Khẩu Hiện Tại <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="bi bi-lock"></i>
+                                </span>
+                                <input type="password" class="form-control" name="currentPassword" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Mật Khẩu Mới <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="bi bi-lock-fill"></i>
+                                </span>
+                                <input type="password" class="form-control" id="newPassword" name="newPassword" required>
+                            </div>
+                            <small class="text-muted">Mật khẩu phải có ít nhất 6 ký tự</small>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Xác Nhận Mật Khẩu Mới <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="bi bi-lock-fill"></i>
+                                </span>
+                                <input type="password" class="form-control" id="confirmNewPassword" name="confirmPassword" required>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <button type="submit" class="btn btn-warning">
+                                <i class="bi bi-check-circle"></i> Đổi Mật Khẩu
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary" onclick="toggleChangePassword()">
+                                <i class="bi bi-x-circle"></i> Hủy
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Account Info Section -->
+            <div class="card shadow-sm mt-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-info-circle"></i> Thông Tin Tài Khoản
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p>
+                                <strong>Ngày Tạo:</strong>
+                                <br>
+                                <span class="text-muted">@Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")</span>
+                            </p>
+                            <p>
+                                <strong>Cập Nhật Gần Nhất:</strong>
+                                <br>
+                                <span class="text-muted">@Model.UpdatedAt.ToString("dd/MM/yyyy HH:mm")</span>
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <p>
+                                <strong>Lần Đăng Nhập Cuối:</strong>
+                                <br>
+                                <span class="text-muted">
+                                    @if (Model.LastLoginAt.HasValue)
+                                    {
+                                        @Model.LastLoginAt.Value.ToString("dd/MM/yyyy HH:mm")
+                                    }
+                                    else
+                                    {
+                                        <span>Chưa đăng nhập lần nào</span>
+                                    }
+                                </span>
+                            </p>
+                            <p>
+                                <strong>Trạng Thái:</strong>
+                                <br>
+                                @if (Model.IsActive)
+                                {
+                                    <span class="badge bg-success">Hoạt Động</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger">Không Hoạt Động</span>
+                                }
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        border: none;
+        border-radius: 10px;
+    }
+
+    .list-group-item.active {
+        background-color: #0c63e4;
+        border-color: #0c63e4;
+    }
+
+    .form-control:focus,
+    .form-select:focus {
+        border-color: #0c63e4;
+        box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+    }
+</style>
+
+@section Scripts {
+    <script>
+        function toggleChangePassword() {
+            const profileCard = document.getElementById('profileCard');
+            const changePasswordCard = document.getElementById('changePasswordCard');
+
+            if (profileCard.style.display !== 'none') {
+                profileCard.style.display = 'none';
+                changePasswordCard.style.display = 'block';
+                window.scrollTo(0, 0);
+            } else {
+                profileCard.style.display = 'block';
+                changePasswordCard.style.display = 'none';
+            }
+        }
+
+        // Validate password match
+        document.getElementById('confirmNewPassword')?.addEventListener('change', function() {
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmNewPassword = this.value;
+
+            if (newPassword !== confirmNewPassword) {
+                this.classList.add('is-invalid');
+                this.classList.remove('is-valid');
+            } else {
+                this.classList.add('is-valid');
+                this.classList.remove('is-invalid');
+            }
+        });
+    </script>
+}

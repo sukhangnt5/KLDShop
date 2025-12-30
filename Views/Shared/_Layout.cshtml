@@ -1,0 +1,481 @@
+﻿<!DOCTYPE html>
+<html lang="vi" itemscope itemtype="https://schema.org/WebSite">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - KLDShop - Cửa Hàng Trực Tuyến</title>
+    
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="@(ViewData["MetaDescription"] ?? "KLDShop - Cửa hàng trực tuyến uy tín chuyên cung cấp sản phẩm chất lượng cao với giá tốt nhất thị trường. Giao hàng nhanh chóng toàn quốc, đổi trả dễ dàng trong 30 ngày. Mua sắm an toàn và tiện lợi.")" />
+    <meta name="keywords" content="@(ViewData["MetaKeywords"] ?? "mua sắm online, cửa hàng trực tuyến, sản phẩm chất lượng, KLDShop")" />
+    <meta name="author" content="KLDShop" />
+    <link rel="canonical" href="@(ViewData["CanonicalUrl"] ?? $"{Context.Request.Scheme}://{Context.Request.Host}{Context.Request.Path}")" />
+    
+    @* Pagination SEO *@
+    @if (ViewData["PrevPageUrl"] != null)
+    {
+        <link rel="prev" href="@ViewData["PrevPageUrl"]" />
+    }
+    @if (ViewData["NextPageUrl"] != null)
+    {
+        <link rel="next" href="@ViewData["NextPageUrl"]" />
+    }
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="@(ViewData["OgType"] ?? "website")" />
+    <meta property="og:url" content="@(ViewData["OgUrl"] ?? $"{Context.Request.Scheme}://{Context.Request.Host}{Context.Request.Path}")" />
+    <meta property="og:title" content="@(ViewData["OgTitle"] ?? ViewData["Title"] + " - KLDShop")" />
+    <meta property="og:description" content="@(ViewData["OgDescription"] ?? ViewData["MetaDescription"] ?? "KLDShop - Cửa hàng trực tuyến uy tín chuyên cung cấp sản phẩm chất lượng cao với giá tốt nhất. Giao hàng nhanh toàn quốc, đổi trả dễ dàng.")" />
+    <meta property="og:image" content="@(ViewData["OgImage"] ?? $"{Context.Request.Scheme}://{Context.Request.Host}/images/logo-og.jpg")" />
+    <meta property="og:site_name" content="KLDShop" />
+    <meta property="og:locale" content="vi_VN" />
+    
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content="@(ViewData["OgUrl"] ?? $"{Context.Request.Scheme}://{Context.Request.Host}{Context.Request.Path}")" />
+    <meta name="twitter:title" content="@(ViewData["OgTitle"] ?? ViewData["Title"] + " - KLDShop")" />
+    <meta name="twitter:description" content="@(ViewData["OgDescription"] ?? ViewData["MetaDescription"] ?? "KLDShop - Cửa hàng trực tuyến uy tín chuyên cung cấp sản phẩm chất lượng cao với giá tốt nhất. Giao hàng nhanh toàn quốc, đổi trả dễ dàng.")" />
+    <meta name="twitter:image" content="@(ViewData["OgImage"] ?? $"{Context.Request.Scheme}://{Context.Request.Host}/images/logo-og.jpg")" />
+    <script type="importmap"></script>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/image-optimization.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/KLDShop.styles.css" asp-append-version="true" />
+    <style>
+        :root {
+            --primary-color: #1b6ec2;
+            --secondary-color: #ff6b6b;
+            --success-color: #51cf66;
+            --warning-color: #ffd93d;
+        }
+    </style>
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+<body>
+    <!-- Header & Navigation -->
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom">
+            <div class="container-fluid">
+                <!-- Logo -->
+                <a class="navbar-brand fw-bold" asp-area="" asp-controller="Home" asp-action="Index">
+                    <i class="bi bi-shop"></i> KLDShop
+                </a>
+                
+                <!-- Mobile Toggle -->
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <div class="navbar-collapse collapse">
+                    <!-- Main Navigation -->
+                    <ul class="navbar-nav me-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">Trang Chủ</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-area="" asp-controller="Product" asp-action="List">Sản Phẩm</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-area="" asp-controller="Home" asp-action="About">Về Chúng Tôi</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Contact">Liên Hệ</a>
+                        </li>
+                    </ul>
+
+                    <!-- Search Bar -->
+                    <form class="d-flex me-3" role="search">
+                        <input class="form-control me-2" type="search" placeholder="Tìm kiếm sản phẩm..." aria-label="Search">
+                        <button class="btn btn-outline-primary" type="submit">Tìm</button>
+                    </form>
+
+                    <!-- User & Cart -->
+                    <ul class="navbar-nav">
+                        @{
+                            var fullName = Context.Session.GetString("FullName");
+                            var isLoggedIn = !string.IsNullOrEmpty(fullName);
+                            var isAdmin = Context.Session.GetInt32("IsAdmin") == 1;
+                        }
+                        
+                        @if (isLoggedIn)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-area="" asp-controller="Account" asp-action="Profile">
+                                    <i class="bi bi-person"></i> Hồ Sơ
+                                </a>
+                            </li>
+                        }
+                        
+                        <li class="nav-item">
+                            <a class="nav-link" asp-area="" asp-controller="Wishlist" asp-action="Index" id="wishlist-link">
+                                <i class="bi bi-heart"></i> Yêu Thích
+                                <span class="badge bg-danger" id="wishlist-count" style="display: none;">0</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-area="" asp-controller="Cart" asp-action="Index" id="cart-link">
+                                <i class="bi bi-cart3"></i> Giỏ Hàng
+                                <span class="badge bg-danger" id="cart-count">0</span>
+                            </a>
+                        </li>
+                        
+                        <li class="nav-item dropdown">
+                            @if (isLoggedIn)
+                            {
+                                <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="bi bi-person-circle"></i> @fullName
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                                    @if (isAdmin)
+                                    {
+                                        <li>
+                                            <a class="dropdown-item" asp-area="" asp-controller="Admin" asp-action="Dashboard">
+                                                <i class="bi bi-speedometer2"></i> Admin Dashboard
+                                            </a>
+                                        </li>
+                                        <li><hr class="dropdown-divider"></li>
+                                    }
+                                    <li>
+                                        <a class="dropdown-item" asp-area="" asp-controller="Order" asp-action="MyOrders">
+                                            <i class="bi bi-bag"></i> Đơn Hàng Của Tôi
+                                        </a>
+                                    </li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <form method="post" asp-area="" asp-controller="Account" asp-action="Logout" style="display: inline;">
+                                            <button type="submit" class="dropdown-item text-danger">
+                                                <i class="bi bi-box-arrow-right"></i> Đăng Xuất
+                                            </button>
+                                        </form>
+                                    </li>
+                                </ul>
+                            }
+                            else
+                            {
+                                <a class="nav-link" asp-area="" asp-controller="Account" asp-action="Login">
+                                    <i class="bi bi-person-circle"></i> Đăng Nhập
+                                </a>
+                            }
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main>
+        <div class="container-fluid my-4">
+            @* Newsletter Messages *@
+            @if (TempData["NewsletterSuccess"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="bi bi-check-circle"></i> @TempData["NewsletterSuccess"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+            @if (TempData["NewsletterError"] != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="bi bi-exclamation-triangle"></i> @TempData["NewsletterError"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+            @if (TempData["NewsletterInfo"] != null)
+            {
+                <div class="alert alert-info alert-dismissible fade show" role="alert">
+                    <i class="bi bi-info-circle"></i> @TempData["NewsletterInfo"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+            
+            @RenderBody()
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-light mt-5 pt-5">
+        <div class="container">
+            <div class="row">
+                <!-- About -->
+                <div class="col-md-3 mb-4">
+                    <h5><i class="bi bi-shop"></i> Về KLDShop</h5>
+                    <p class="small">
+                        KLDShop là cửa hàng trực tuyến uy tín chuyên cung cấp sản phẩm chất lượng cao với giá tốt nhất. 
+                        Với hơn 5 năm kinh nghiệm, chúng tôi đã phục vụ hàng trăm ngàn khách hàng trên toàn quốc. 
+                        Cam kết 100% hàng chính hãng, giao hàng nhanh, đổi trả dễ dàng trong 30 ngày.
+                    </p>
+                    <div class="mt-3">
+                        <a href="@Url.Action("About", "Home")" class="btn btn-outline-light btn-sm">
+                            <i class="bi bi-info-circle"></i> Tìm Hiểu Thêm
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Quick Links -->
+                <div class="col-md-2 mb-4">
+                    <h5><i class="bi bi-link-45deg"></i> Liên Kết</h5>
+                    <ul class="list-unstyled small">
+                        <li class="mb-2"><a href="@Url.Action("Index", "Home")" class="text-light text-decoration-none"><i class="bi bi-house"></i> Trang Chủ</a></li>
+                        <li class="mb-2"><a href="@Url.Action("List", "Product")" class="text-light text-decoration-none"><i class="bi bi-grid"></i> Sản Phẩm</a></li>
+                        <li class="mb-2"><a href="@Url.Action("About", "Home")" class="text-light text-decoration-none"><i class="bi bi-info-circle"></i> Giới Thiệu</a></li>
+                        <li class="mb-2"><a href="@Url.Action("Contact", "Home")" class="text-light text-decoration-none"><i class="bi bi-envelope"></i> Liên Hệ</a></li>
+                        <li class="mb-2"><a href="@Url.Action("Privacy", "Home")" class="text-light text-decoration-none"><i class="bi bi-shield-check"></i> Bảo Mật</a></li>
+                    </ul>
+                </div>
+
+                <!-- Customer Service -->
+                <div class="col-md-2 mb-4">
+                    <h5><i class="bi bi-headset"></i> Hỗ Trợ</h5>
+                    <ul class="list-unstyled small">
+                        <li class="mb-2"><a href="@Url.Action("Faq", "Home")" class="text-light text-decoration-none">Câu Hỏi Thường Gặp</a></li>
+                        <li class="mb-2"><a href="@Url.Action("ShippingPolicy", "Home")" class="text-light text-decoration-none">Chính Sách Vận Chuyển</a></li>
+                        <li class="mb-2"><a href="@Url.Action("ReturnPolicy", "Home")" class="text-light text-decoration-none">Chính Sách Đổi Trả</a></li>
+                        <li class="mb-2"><a href="@Url.Action("Privacy", "Home")" class="text-light text-decoration-none">Chính Sách Bảo Mật</a></li>
+                        <li class="mb-2"><a href="@Url.Action("Contact", "Home")" class="text-light text-decoration-none">Hỗ Trợ Khách Hàng</a></li>
+                    </ul>
+                </div>
+
+                <!-- Contact Info -->
+                <div class="col-md-2 mb-4">
+                    <h5><i class="bi bi-telephone"></i> Liên Hệ</h5>
+                    <ul class="list-unstyled small">
+                        <li class="mb-2">
+                            <i class="bi bi-geo-alt-fill text-warning"></i> 
+                            <strong>Địa chỉ:</strong><br>
+                            123 Đường ABC, Quận XYZ<br>TP. Hồ Chí Minh, Việt Nam
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-telephone-fill text-success"></i> 
+                            <strong>Hotline:</strong><br>
+                            1900-xxxx (24/7)
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-envelope-fill text-info"></i> 
+                            <strong>Email:</strong><br>
+                            support@kldshop.com
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-clock-fill text-primary"></i> 
+                            <strong>Giờ làm việc:</strong><br>
+                            8:00 - 22:00 (Thứ 2 - CN)
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Newsletter Subscription -->
+                <div class="col-md-3 mb-4">
+                    <h5>Đăng Ký Nhận Tin</h5>
+                    <p>Nhận thông tin về sản phẩm mới và ưu đãi đặc biệt!</p>
+                    <form method="post" asp-controller="Newsletter" asp-action="Subscribe" id="newsletter-form">
+                        @Html.AntiForgeryToken()
+                        <div class="input-group mb-2">
+                            <input type="email" 
+                                   name="email" 
+                                   class="form-control form-control-sm" 
+                                   placeholder="Email của bạn" 
+                                   required>
+                            <button class="btn btn-primary btn-sm" type="submit">
+                                <i class="bi bi-envelope"></i> Đăng Ký
+                            </button>
+                        </div>
+                    </form>
+                    <div class="btn-group mt-3" role="group">
+                        <a href="#" class="btn btn-outline-light btn-sm">
+                            <i class="bi bi-facebook"></i>
+                        </a>
+                        <a href="#" class="btn btn-outline-light btn-sm">
+                            <i class="bi bi-twitter"></i>
+                        </a>
+                        <a href="#" class="btn btn-outline-light btn-sm">
+                            <i class="bi bi-instagram"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <hr class="bg-secondary">
+
+            <!-- Payment & Security -->
+            <div class="row mb-3">
+                <div class="col-md-6 mb-3">
+                    <h6 class="text-uppercase"><i class="bi bi-credit-card"></i> Phương Thức Thanh Toán</h6>
+                    <p class="small mb-2">
+                        Chúng tôi chấp nhận: COD (Thanh toán khi nhận hàng), Chuyển khoản ngân hàng, 
+                        Ví điện tử (Momo, ZaloPay, VNPay), Thẻ tín dụng/ghi nợ Visa/MasterCard/JCB
+                    </p>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <h6 class="text-uppercase"><i class="bi bi-shield-lock"></i> Bảo Mật & Chứng Nhận</h6>
+                    <p class="small mb-2">
+                        Website được bảo mật SSL/TLS. Đã đăng ký với Bộ Công Thương. 
+                        Thông tin khách hàng được bảo mật tuyệt đối theo quy định pháp luật Việt Nam.
+                    </p>
+                </div>
+            </div>
+
+            <hr class="bg-secondary">
+
+            <!-- Copyright -->
+            <div class="text-center py-3">
+                <p class="mb-1">&copy; 2025 KLDShop - Cửa Hàng Trực Tuyến Uy Tín. Tất cả quyền được bảo lưu.</p>
+                <p class="small text-muted mb-0">
+                    <a href="@Url.Action("Privacy", "Home")" class="text-light text-decoration-none">Chính Sách Bảo Mật</a> | 
+                    <a href="@Url.Action("ShippingPolicy", "Home")" class="text-light text-decoration-none">Chính Sách Vận Chuyển</a> | 
+                    <a href="@Url.Action("ReturnPolicy", "Home")" class="text-light text-decoration-none">Chính Sách Đổi Trả</a> | 
+                    <a href="@Url.Action("Faq", "Home")" class="text-light text-decoration-none">FAQ</a> | 
+                    <a href="@Url.Action("Contact", "Home")" class="text-light text-decoration-none">Liên Hệ</a>
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    
+    <script>
+        // Update wishlist badge on page load
+        $(document).ready(function() {
+            updateWishlistBadge();
+        });
+
+        function updateWishlistBadge() {
+            $.get('@Url.Action("GetCount", "Wishlist")', function(data) {
+                if (data.count > 0) {
+                    $('#wishlist-count').text(data.count).show();
+                } else {
+                    $('#wishlist-count').hide();
+                }
+            });
+        }
+    </script>
+    
+    @await RenderSectionAsync("Scripts", required: false)
+    
+    <!-- Schema.org Organization Markup -->
+    <script type="application/ld+json">
+    {
+        "@@context": "https://schema.org",
+        "@@type": "Organization",
+        "name": "KLDShop",
+        "legalName": "KLDShop - Cửa Hàng Trực Tuyến",
+        "url": "@(Context.Request.Scheme)://@(Context.Request.Host)",
+        "logo": "@(Context.Request.Scheme)://@(Context.Request.Host)/images/logo.png",
+        "description": "KLDShop là cửa hàng trực tuyến uy tín chuyên cung cấp sản phẩm chất lượng cao với giá tốt nhất thị trường. Giao hàng nhanh chóng toàn quốc, đổi trả dễ dàng trong 30 ngày.",
+        "foundingDate": "2020",
+        "address": {
+            "@@type": "PostalAddress",
+            "streetAddress": "123 Đường ABC, Quận XYZ",
+            "addressLocality": "Thành phố Hồ Chí Minh",
+            "addressRegion": "TP.HCM",
+            "postalCode": "700000",
+            "addressCountry": "VN"
+        },
+        "contactPoint": [{
+            "@@type": "ContactPoint",
+            "telephone": "+84-1900-xxxx",
+            "contactType": "customer service",
+            "areaServed": "VN",
+            "availableLanguage": ["Vietnamese"]
+        }],
+        "sameAs": [
+            "https://www.facebook.com/kldshop",
+            "https://twitter.com/kldshop",
+            "https://www.instagram.com/kldshop"
+        ],
+        "aggregateRating": {
+            "@@type": "AggregateRating",
+            "ratingValue": "4.8",
+            "reviewCount": "15420"
+        }
+    }
+    </script>
+
+    <!-- Schema.org Website Markup -->
+    <script type="application/ld+json">
+    {
+        "@@context": "https://schema.org",
+        "@@type": "WebSite",
+        "name": "KLDShop",
+        "url": "@(Context.Request.Scheme)://@(Context.Request.Host)",
+        "potentialAction": {
+            "@@type": "SearchAction",
+            "target": "@(Context.Request.Scheme)://@(Context.Request.Host)/Product/List?search={search_term_string}",
+            "query-input": "required name=search_term_string"
+        }
+    }
+    </script>
+
+    <!-- Schema.org Local Business Markup -->
+    <script type="application/ld+json">
+    {
+        "@@context": "https://schema.org",
+        "@@type": "Store",
+        "@@id": "@(Context.Request.Scheme)://@(Context.Request.Host)/#store",
+        "name": "KLDShop",
+        "image": "@(Context.Request.Scheme)://@(Context.Request.Host)/images/logo.png",
+        "telephone": "+84-1900-xxxx",
+        "email": "support@kldshop.com",
+        "address": {
+            "@@type": "PostalAddress",
+            "streetAddress": "123 Đường ABC, Quận XYZ",
+            "addressLocality": "Thành phố Hồ Chí Minh",
+            "addressRegion": "TP.HCM",
+            "postalCode": "700000",
+            "addressCountry": "VN"
+        },
+        "geo": {
+            "@@type": "GeoCoordinates",
+            "latitude": "10.8231",
+            "longitude": "106.6297"
+        },
+        "url": "@(Context.Request.Scheme)://@(Context.Request.Host)",
+        "priceRange": "$$",
+        "openingHoursSpecification": [
+            {
+                "@@type": "OpeningHoursSpecification",
+                "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+                "opens": "08:00",
+                "closes": "22:00"
+            }
+        ],
+        "paymentAccepted": "Cash, Credit Card, Debit Card, Mobile Payment, Bank Transfer",
+        "currenciesAccepted": "VND"
+    }
+    </script>
+
+    <!-- Breadcrumb Schema (if applicable) -->
+    @if (ViewData["BreadcrumbSchema"] != null)
+    {
+        @Html.Raw(ViewData["BreadcrumbSchema"])
+    }
+    
+    <!--Start of Tawk.to Script - SEO Optimized-->
+    <script type="text/javascript">
+        // Lazy load Tawk.to to improve page speed
+        var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+        
+        // Load Tawk.to after page is fully loaded
+        window.addEventListener('load', function() {
+            setTimeout(function() {
+                (function(){
+                    var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+                    s1.async=true;
+                    s1.src='https://embed.tawk.to/693cd7ecdfff06197e00aafc/1jcaqmt2t';
+                    s1.charset='UTF-8';
+                    s1.setAttribute('crossorigin','anonymous');
+                    s1.setAttribute('title','Live Chat Support Widget');
+                    s1.onerror = function() {
+                        console.log('Tawk.to failed to load');
+                    };
+                    s0.parentNode.insertBefore(s1,s0);
+                })();
+            }, 2000); // Delay 2 seconds after page load
+        });
+    </script>
+    <!--End of Tawk.to Script-->
+</body>
+</html>

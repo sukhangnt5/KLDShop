@@ -1,0 +1,585 @@
+﻿@model List<Product>
+
+@{
+    ViewData["Title"] = "Trang Chủ - KLDShop";
+}
+
+<div class="row mb-5">
+    <!-- Hero Banner -->
+    <div class="col-12">
+        <div class="bg-primary text-white p-5 rounded-lg" style="background: linear-gradient(135deg, #1b6ec2 0%, #0d47a1 100%);">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <h1 class="display-4 fw-bold mb-3">Chào Mừng Đến KLDShop</h1>
+                    <p class="lead mb-4">Khám phá hàng ngàn sản phẩm chất lượng cao với giá tốt nhất</p>
+                    <a href="@Url.Action("List", "Product")" class="btn btn-warning btn-lg">
+                        <i class="bi bi-shop"></i> Mua Sắm Ngay
+                    </a>
+                </div>
+                <div class="col-md-6 text-center">
+                    <img src="https://via.placeholder.com/400x300?text=Featured+Products" 
+                         alt="Sản phẩm nổi bật tại KLDShop" 
+                         class="img-fluid rounded"
+                         loading="eager"
+                         decoding="async"
+                         width="400"
+                         height="300">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Promotional Section -->
+<div class="row mb-5">
+    <div class="col-md-4 mb-3">
+        <div class="card h-100 text-center">
+            <div class="card-body">
+                <i class="bi bi-truck" style="font-size: 3rem; color: #1b6ec2;"></i>
+                <h5 class="card-title mt-3">Miễn Phí Vận Chuyển</h5>
+                <p class="card-text">Vận chuyển miễn phí cho tất cả đơn hàng trên 500.000đ</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="card h-100 text-center">
+            <div class="card-body">
+                <i class="bi bi-shield-check" style="font-size: 3rem; color: #51cf66;"></i>
+                <h5 class="card-title mt-3">Bảo Đảm Chất Lượng</h5>
+                <p class="card-text">Tất cả sản phẩm đều được kiểm tra chất lượng kỹ lưỡng</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="card h-100 text-center">
+            <div class="card-body">
+                <i class="bi bi-arrow-counterclockwise" style="font-size: 3rem; color: #ff6b6b;"></i>
+                <h5 class="card-title mt-3">Hoàn Tiền 30 Ngày</h5>
+                <p class="card-text">Không hài lòng? Hoàn tiền 100% trong 30 ngày</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Featured Products Section -->
+<div class="row mb-5">
+    <div class="col-12">
+        <h2 class="mb-4">
+            <i class="bi bi-star-fill" style="color: #ffd93d;"></i>
+            Sản Phẩm Nổi Bật
+        </h2>
+    </div>
+
+    <!-- Product Cards - Loop through products from Model -->
+    @if (Model != null && Model.Count > 0)
+    {
+        @foreach (var product in Model)
+        {
+            var discountPercent = product.DiscountPrice.HasValue 
+                ? (int)((1 - product.DiscountPrice.Value / product.Price) * 100) 
+                : 0;
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card product-card h-100 shadow-sm">
+                    <div class="position-relative" style="height: 250px; overflow: hidden; background: #f8f9fa;">
+                        <img src="@(string.IsNullOrEmpty(product.Image) ? "https://via.placeholder.com/300x200?text=" + System.Net.WebUtility.UrlEncode(product.ProductName) : product.Image)" 
+                             class="card-img-top"
+                             style="width: 100%; height: 100%; object-fit: cover; object-position: center;" 
+                             alt="@product.ProductName - Mua online tại KLDShop"
+                             loading="lazy"
+                             decoding="async"
+                             width="300"
+                             height="200">
+                        @if (discountPercent > 0)
+                        {
+                            <span class="badge bg-danger position-absolute top-0 end-0 m-2">-@discountPercent%</span>
+                        }
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">@product.ProductName</h5>
+                        <p class="card-text text-muted">@(string.IsNullOrEmpty(product?.Description) ? "Mô tả sản phẩm" : (product.Description?.Length > 50 ? product.Description.Substring(0, 50) : product.Description))...</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                @if (product?.DiscountPrice.HasValue == true)
+                                {
+                                    <span class="h5 text-danger fw-bold">@product.DiscountPrice.Value.ToString("N0")đ</span><br>
+                                    <small class="text-muted"><s>@product?.Price.ToString("N0")đ</s></small>
+                                }
+                                else
+                                {
+                                    <span class="h5 text-danger fw-bold">@product?.Price.ToString("N0")đ</span>
+                                }
+                            </div>
+                            <div class="text-warning">
+                                <i class="bi bi-star-fill"></i>
+                                <i class="bi bi-star-fill"></i>
+                                <i class="bi bi-star-fill"></i>
+                                <i class="bi bi-star-fill"></i>
+                                <i class="bi bi-star"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-white border-top">
+                        @{
+                            var productUrl = !string.IsNullOrEmpty(product?.Slug)
+                                ? Url.Action("DetailsBySlug", "Product", new { slug = product.Slug })
+                                : Url.Action("Details", "Product", new { id = product?.ProductId ?? 0 });
+                        }
+                        <a href="@productUrl" class="btn btn-primary btn-sm w-100 mb-2">
+                            <i class="bi bi-eye"></i> Xem Chi Tiết
+                        </a>
+                        <button class="btn btn-success btn-sm w-100" onclick="addToCart(@(product?.ProductId ?? 0), 1)">
+                            <i class="bi bi-cart-plus"></i> Thêm Vào Giỏ
+                        </button>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+    else
+    {
+        <div class="col-12">
+            <div class="alert alert-info text-center">
+                <p>Không có sản phẩm nào để hiển thị</p>
+            </div>
+        </div>
+    }
+</div>
+
+<!-- Why Choose Us Section -->
+<div class="row mb-5">
+    <div class="col-12">
+        <h2 class="text-center mb-4">Tại Sao Chọn KLDShop?</h2>
+        <p class="text-center text-muted mb-5">
+            Với hơn 5 năm kinh nghiệm trong lĩnh vực thương mại điện tử, KLDShop đã và đang phục vụ hàng trăm ngàn khách hàng 
+            trên khắp Việt Nam. Chúng tôi tự hào là đối tác tin cậy cho nhu cầu mua sắm trực tuyến của bạn.
+        </p>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="text-center">
+            <i class="bi bi-award" style="font-size: 3rem; color: #ffd93d;"></i>
+            <h4 class="mt-3">Sản Phẩm Chính Hãng</h4>
+            <p>100% hàng chính hãng, có tem chống giả và bảo hành từ nhà sản xuất. Cam kết hoàn tiền 200% nếu phát hiện hàng nhái.</p>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="text-center">
+            <i class="bi bi-clock-history" style="font-size: 3rem; color: #1b6ec2;"></i>
+            <h4 class="mt-3">Giao Hàng Siêu Tốc</h4>
+            <p>Giao hàng nhanh trong 1-3 ngày tại nội thành các tỉnh thành lớn. Đội ngũ vận chuyển chuyên nghiệp, đảm bảo hàng nguyên vẹn.</p>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="text-center">
+            <i class="bi bi-headset" style="font-size: 3rem; color: #51cf66;"></i>
+            <h4 class="mt-3">Hỗ Trợ 24/7</h4>
+            <p>Đội ngũ chăm sóc khách hàng luôn sẵn sàng tư vấn và giải đáp mọi thắc mắc qua hotline, email, và chat trực tuyến.</p>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="text-center">
+            <i class="bi bi-piggy-bank" style="font-size: 3rem; color: #ff6b6b;"></i>
+            <h4 class="mt-3">Giá Tốt Nhất</h4>
+            <p>Cam kết giá cạnh tranh nhất thị trường. Nếu tìm thấy giá rẻ hơn, chúng tôi hoàn lại 110% chênh lệch cho bạn.</p>
+        </div>
+    </div>
+</div>
+
+<!-- Customer Testimonials -->
+<div class="row mb-5 bg-light p-5 rounded">
+    <div class="col-12">
+        <h2 class="text-center mb-4">Khách Hàng Nói Gì Về Chúng Tôi</h2>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="mb-3 text-warning">
+                    <i class="bi bi-star-fill"></i>
+                    <i class="bi bi-star-fill"></i>
+                    <i class="bi bi-star-fill"></i>
+                    <i class="bi bi-star-fill"></i>
+                    <i class="bi bi-star-fill"></i>
+                </div>
+                <p class="card-text">"Mình đã mua hàng tại KLDShop nhiều lần, sản phẩm chất lượng tốt, đúng mô tả, giao hàng nhanh. 
+                Đội ngũ chăm sóc khách hàng rất nhiệt tình và chuyên nghiệp."</p>
+                <p class="text-muted mb-0"><strong>- Nguyễn Thị Mai, Hà Nội</strong></p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="mb-3 text-warning">
+                    <i class="bi bi-star-fill"></i>
+                    <i class="bi bi-star-fill"></i>
+                    <i class="bi bi-star-fill"></i>
+                    <i class="bi bi-star-fill"></i>
+                    <i class="bi bi-star-fill"></i>
+                </div>
+                <p class="card-text">"Giá cả hợp lý, nhiều chương trình khuyến mãi hấp dẫn. Đặc biệt chính sách đổi trả dễ dàng 
+                khiến mình yên tâm khi mua sắm online. Sẽ tiếp tục ủng hộ!"</p>
+                <p class="text-muted mb-0"><strong>- Trần Văn Hùng, TP.HCM</strong></p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="mb-3 text-warning">
+                    <i class="bi bi-star-fill"></i>
+                    <i class="bi bi-star-fill"></i>
+                    <i class="bi bi-star-fill"></i>
+                    <i class="bi bi-star-fill"></i>
+                    <i class="bi bi-star-fill"></i>
+                </div>
+                <p class="card-text">"Website dễ sử dụng, thanh toán tiện lợi. Mình đặc biệt thích dịch vụ giao hàng siêu nhanh, 
+                đặt hôm nay mai đã nhận được rồi. Rất hài lòng với dịch vụ!"</p>
+                <p class="text-muted mb-0"><strong>- Lê Thị Hương, Đà Nẵng</strong></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- SEO Content Section -->
+<div class="row mb-5">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <h2 class="mb-4">Mua Sắm Trực Tuyến An Toàn Tại KLDShop</h2>
+                <p>
+                    <strong>KLDShop</strong> là một trong những cửa hàng trực tuyến hàng đầu tại Việt Nam, chuyên cung cấp 
+                    đa dạng các loại sản phẩm từ điện tử, thời trang, đồ gia dụng đến mỹ phẩm, thực phẩm chức năng. 
+                    Với phương châm "Chất lượng - Uy tín - Giá tốt", chúng tôi cam kết mang đến cho khách hàng trải nghiệm 
+                    mua sắm online tuyệt vời nhất.
+                </p>
+                <p>
+                    Hệ thống bảo mật đa lớp của chúng tôi đảm bảo mọi giao dịch thanh toán đều được mã hóa an toàn. 
+                    Bạn có thể yên tâm mua sắm với nhiều phương thức thanh toán linh hoạt: thanh toán khi nhận hàng (COD), 
+                    chuyển khoản ngân hàng, ví điện tử (Momo, ZaloPay, VNPay), và thẻ tín dụng/ghi nợ quốc tế.
+                </p>
+                <p>
+                    <strong>Chính sách đổi trả linh hoạt:</strong> Nếu bạn không hài lòng với sản phẩm, KLDShop chấp nhận 
+                    đổi trả trong vòng 30 ngày mà không cần lý do. Chúng tôi hoàn tiền 100% nếu sản phẩm có lỗi từ nhà sản xuất 
+                    hoặc không đúng mô tả. Quy trình đổi trả đơn giản, nhanh chóng, không hỏi han phiền phức.
+                </p>
+                <p>
+                    Hãy tham gia cộng đồng hàng trăm ngàn khách hàng đã tin tưởng và lựa chọn KLDShop cho nhu cầu mua sắm 
+                    trực tuyến của họ. Đăng ký thành viên ngay hôm nay để nhận được nhiều ưu đãi độc quyền, điểm thưởng tích lũy, 
+                    và thông tin về các chương trình khuyến mãi sớm nhất!
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Call to Action -->
+<div class="row mb-5">
+    <div class="col-12">
+        <div class="bg-light p-5 rounded text-center">
+            <h3 class="mb-3">Khám Phá Hàng Ngàn Sản Phẩm Chất Lượng</h3>
+            <p class="lead mb-4">Tìm kiếm sản phẩm bạn cần từ bộ sưu tập đa dạng của chúng tôi với giá tốt nhất thị trường</p>
+            <a href="@Url.Action("List", "Product")" class="btn btn-primary btn-lg">
+                <i class="bi bi-grid-3x3-gap"></i> Xem Tất Cả Sản Phẩm
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Additional SEO Content Block - Beautified -->
+<div class="row mb-5">
+    <div class="col-12">
+        <article class="card border-0 shadow-lg">
+            <div class="card-header bg-gradient text-white text-center py-4" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                <h2 class="mb-2"><i class="bi bi-shop-window"></i> KLDShop - Điểm Đến Mua Sắm Trực Tuyến Hàng Đầu Việt Nam</h2>
+                <p class="mb-0 lead">Hơn 500,000 khách hàng tin tưởng • Hàng triệu lượt truy cập mỗi tháng</p>
+            </div>
+            <div class="card-body p-5">
+                <div class="row align-items-center mb-4">
+                    <div class="col-md-8">
+                        <p class="lead text-muted">
+                            <i class="bi bi-quote text-primary" style="font-size: 2rem;"></i>
+                            Trong bối cảnh thương mại điện tử đang phát triển mạnh mẽ tại Việt Nam, việc tìm kiếm một địa chỉ mua sắm trực tuyến uy tín, 
+                            chất lượng và đáng tin cậy trở thành ưu tiên hàng đầu của người tiêu dùng.
+                        </p>
+                    </div>
+                    <div class="col-md-4 text-center">
+                        <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 150px; height: 150px;">
+                            <div>
+                                <div class="display-4 fw-bold text-primary">500K+</div>
+                                <small class="text-muted">Khách hàng</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <div class="card border-info h-100">
+                            <div class="card-body">
+                                <h5 class="text-info"><i class="bi bi-rocket-takeoff"></i> Hành Trình 2020-2025</h5>
+                                <p>
+                                    Được thành lập từ năm 2020, KLDShop đã không ngừng phát triển và hoàn thiện để trở thành một trong những nền tảng thương mại điện tử 
+                                    hàng đầu tại Việt Nam. Chúng tôi hiểu rằng mua sắm trực tuyến không chỉ đơn thuần là việc mua bán hàng hóa, mà còn là cả một trải nghiệm 
+                                    về dịch vụ, sự tin tưởng và giá trị.
+                                </p>
+                                <div class="d-flex justify-content-around text-center mt-3">
+                                    <div>
+                                        <div class="h4 text-success mb-0">✓</div>
+                                        <small>Chất lượng</small>
+                                    </div>
+                                    <div>
+                                        <div class="h4 text-primary mb-0">✓</div>
+                                        <small>Uy tín</small>
+                                    </div>
+                                    <div>
+                                        <div class="h4 text-warning mb-0">✓</div>
+                                        <small>Giá tốt</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card border-success h-100">
+                            <div class="card-body">
+                                <h5 class="text-success"><i class="bi bi-bag-check"></i> 1,000+ Thương Hiệu</h5>
+                                <p>
+                                    Bộ sưu tập sản phẩm tại KLDShop vô cùng đa dạng và phong phú, đáp ứng mọi nhu cầu từ công nghệ điện tử, thời trang, đồ gia dụng, 
+                                    mỹ phẩm cho đến thực phẩm chức năng.
+                                </p>
+                                <div class="mt-3">
+                                    <span class="badge bg-primary me-1">Apple</span>
+                                    <span class="badge bg-primary me-1">Samsung</span>
+                                    <span class="badge bg-primary me-1">Xiaomi</span>
+                                    <span class="badge bg-success me-1">Nike</span>
+                                    <span class="badge bg-success me-1">Adidas</span>
+                                    <span class="badge bg-info me-1">Unilever</span>
+                                    <span class="badge bg-info me-1">P&G</span>
+                                    <span class="badge bg-warning">+993 khác</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card bg-gradient text-white mb-4" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                    <div class="card-body p-4">
+                        <h5 class="card-title"><i class="bi bi-people-fill"></i> Đội Ngũ Chuyên Nghiệp</h5>
+                        <div class="row text-center mt-3">
+                            <div class="col-6 col-md-3 mb-3">
+                                <div class="display-6 fw-bold">200+</div>
+                                <small>Nhân viên</small>
+                            </div>
+                            <div class="col-6 col-md-3 mb-3">
+                                <div class="display-6 fw-bold">24/7</div>
+                                <small>CSKH</small>
+                            </div>
+                            <div class="col-6 col-md-3 mb-3">
+                                <div class="display-6 fw-bold">&lt;5</div>
+                                <small>Phút phản hồi</small>
+                            </div>
+                            <div class="col-6 col-md-3 mb-3">
+                                <div class="display-6 fw-bold">4+</div>
+                                <small>Kênh hỗ trợ</small>
+                            </div>
+                        </div>
+                        <p class="mb-0 mt-3">
+                            <i class="bi bi-headset"></i> Hotline • 
+                            <i class="bi bi-envelope"></i> Email • 
+                            <i class="bi bi-chat-dots"></i> Live Chat • 
+                            <i class="bi bi-facebook"></i> Social Media
+                        </p>
+                    </div>
+                </div>
+                <div class="alert alert-success border-start border-success border-4 mb-4">
+                    <h5 class="alert-heading"><i class="bi bi-truck"></i> Hệ Thống Logistics Hiện Đại</h5>
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <ul class="list-unstyled">
+                                <li><i class="bi bi-check2-circle text-success"></i> <strong>10,000m²</strong> kho bãi</li>
+                                <li><i class="bi bi-check2-circle text-success"></i> <strong>3 trung tâm</strong> logistics</li>
+                                <li><i class="bi bi-check2-circle text-success"></i> Kho tại TP.HCM, Hà Nội, Đà Nẵng</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <ul class="list-unstyled">
+                                <li><i class="bi bi-truck text-primary"></i> Viettel Post</li>
+                                <li><i class="bi bi-truck text-primary"></i> GHTK</li>
+                                <li><i class="bi bi-truck text-primary"></i> Ninja Van</li>
+                                <li><i class="bi bi-truck text-primary"></i> J&T Express</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            <p>
+                Chất lượng sản phẩm luôn là ưu tiên hàng đầu của KLDShop. Chúng tôi có đội ngũ Quality Control riêng để kiểm tra từng sản phẩm trước khi 
+                xuất kho. Tất cả sản phẩm đều được kiểm tra về ngoại quan, chức năng, tính năng và đóng gói. Đối với các sản phẩm điện tử, chúng tôi còn 
+                có quy trình test chạy thử để đảm bảo hoạt động ổn định. Chính vì vậy, tỷ lệ lỗi sản phẩm tại KLDShop luôn được duy trì ở mức dưới 0.5%, 
+                thấp hơn rất nhiều so với trung bình ngành.
+            </p>
+            <p>
+                Về công nghệ, KLDShop đầu tư mạnh vào việc xây dựng và phát triển nền tảng website và ứng dụng mobile với trải nghiệm người dùng tốt nhất. 
+                Website được thiết kế responsive, tối ưu cho mọi thiết bị từ desktop, tablet đến smartphone. Hệ thống tìm kiếm thông minh sử dụng AI để 
+                hiểu ý định tìm kiếm của khách hàng và đưa ra kết quả chính xác nhất. Công nghệ recommendation engine giúp gợi ý sản phẩm phù hợp dựa trên 
+                lịch sử duyệt web và mua hàng của khách hàng.
+            </p>
+            <p>
+                Bảo mật thông tin và giao dịch là một trong những mối quan tâm hàng đầu của KLDShop. Chúng tôi sử dụng công nghệ mã hóa SSL/TLS 256-bit 
+                cho tất cả các giao dịch trên website. Hệ thống thanh toán tuân thủ tiêu chuẩn PCI DSS quốc tế. Chúng tôi không lưu trữ thông tin thẻ 
+                tín dụng của khách hàng trên server, tất cả đều được xử lý thông qua các cổng thanh toán bên thứ ba đã được chứng nhận an toàn. 
+                Dữ liệu khách hàng được mã hóa và lưu trữ an toàn, tuân thủ nghiêm ngặt các quy định về bảo vệ dữ liệu cá nhân của pháp luật Việt Nam.
+            </p>
+            <p>
+                Chương trình khách hàng thân thiết của KLDShop được xây dựng để tri ân những khách hàng đã và đang đồng hành cùng chúng tôi. Hệ thống 
+                tích điểm thưởng với tỷ lệ 1% giá trị đơn hàng được quy đổi thành điểm, có thể sử dụng cho các lần mua tiếp theo. Khách hàng VIP còn 
+                được hưởng nhiều đặc quyền như giảm giá độc quyền, ưu tiên xử lý đơn hàng, tham gia sự kiện riêng, nhận quà tặng sinh nhật và nhiều 
+                ưu đãi khác. Hiện tại, chúng tôi có hơn 100,000 thành viên VIP và con số này đang không ngừng tăng lên.
+            </p>
+            <p>
+                Trách nhiệm xã hội là một phần quan trọng trong chiến lược phát triển bền vững của KLDShop. Chúng tôi cam kết sử dụng vật liệu đóng gói 
+                thân thiện với môi trường, giảm thiểu rác thải nhựa. Chương trình "Mua sắm xanh" khuyến khích khách hàng lựa chọn các sản phẩm thân thiện 
+                với môi trường. Chúng tôi cũng thường xuyên tổ chức các hoạt động từ thiện, ủng hộ cộng đồng, đóng góp cho các quỹ hỗ trợ người nghèo, 
+                học sinh khó khăn và các hoàn cảnh khó khăn khác trong xã hội.
+            </p>
+            <p>
+                Với tất cả những nỗ lực không ngừng nghỉ, KLDShop đã nhận được nhiều giải thưởng danh giá như "Top 10 Website TMĐT uy tín nhất Việt Nam", 
+                "Thương hiệu được yêu thích nhất", "Dịch vụ khách hàng xuất sắc" và nhiều giải thưởng khác. Tuy nhiên, phần thưởng lớn nhất đối với chúng tôi 
+                chính là sự tin tưởng và ủng hộ của hàng trăm ngàn khách hàng. Hãy đến với KLDShop để trải nghiệm dịch vụ mua sắm trực tuyến tốt nhất Việt Nam!
+            </p>
+        </article>
+    </div>
+</div>
+
+<!-- SEO Rich Text Content -->
+<div class="row mb-5">
+    <div class="col-12">
+        <div class="card border-0">
+            <div class="card-body p-5">
+                <h2 class="text-center mb-4">Hướng Dẫn Mua Sắm Trực Tuyến An Toàn Tại KLDShop</h2>
+                
+                <div class="row">
+                    <div class="col-md-12 mb-4">
+                        <h3>Mua Sắm Online Tại KLDShop - Dễ Dàng Và Tiện Lợi</h3>
+                        <p>
+                            Trong thời đại công nghệ số phát triển như hiện nay, mua sắm trực tuyến đã trở thành xu hướng phổ biến được nhiều người tiêu dùng Việt Nam lựa chọn. 
+                            KLDShop hiểu rõ nhu cầu và mong muốn của khách hàng về một nền tảng mua sắm trực tuyến uy tín, chất lượng và đáng tin cậy. 
+                            Chúng tôi không chỉ đơn thuần là một website bán hàng, mà còn là người bạn đồng hành tin cậy trong hành trình mua sắm của bạn.
+                        </p>
+                        <p>
+                            Website KLDShop được thiết kế với giao diện thân thiện, dễ sử dụng, giúp khách hàng có thể dễ dàng tìm kiếm và lựa chọn sản phẩm phù hợp với nhu cầu của mình. 
+                            Hệ thống tìm kiếm thông minh cho phép bạn lọc sản phẩm theo nhiều tiêu chí khác nhau như giá cả, thương hiệu, màu sắc, kích thước, giúp tiết kiệm thời gian và đưa ra quyết định mua hàng nhanh chóng hơn. 
+                            Mỗi sản phẩm đều được mô tả chi tiết với hình ảnh chất lượng cao, thông số kỹ thuật đầy đủ và đánh giá từ người dùng thực tế, giúp bạn có cái nhìn toàn diện nhất trước khi quyết định mua hàng.
+                        </p>
+                    </div>
+
+                    <div class="col-md-12 mb-4">
+                        <h3>Đa Dạng Sản Phẩm - Đáp Ứng Mọi Nhu Cầu</h3>
+                        <p>
+                            KLDShop tự hào sở hữu một bộ sưu tập sản phẩm đa dạng và phong phú với hàng ngàn mặt hàng thuộc nhiều danh mục khác nhau. 
+                            Từ các sản phẩm công nghệ điện tử như điện thoại di động, laptop, máy tính bảng, tai nghe, loa bluetooth của các thương hiệu nổi tiếng như Apple, Samsung, Xiaomi, Sony, đến các sản phẩm thời trang nam nữ với đầy đủ các phong cách từ thanh lịch, công sở đến năng động, thể thao. 
+                            Bạn cũng có thể tìm thấy các sản phẩm đồ gia dụng, nội thất, đồ dùng nhà bếp chất lượng cao giúp không gian sống của bạn trở nên hiện đại và tiện nghi hơn.
+                        </p>
+                        <p>
+                            Bên cạnh đó, KLDShop còn cung cấp các sản phẩm mỹ phẩm, chăm sóc sắc đẹp, thực phẩm chức năng, đồ chơi trẻ em, đồ thể thao và nhiều danh mục khác. 
+                            Chúng tôi không ngừng cập nhật và bổ sung các sản phẩm mới, xu hướng mới để đảm bảo khách hàng luôn có nhiều sự lựa chọn phù hợp với nhu cầu và túi tiền của mình. 
+                            Đặc biệt, chúng tôi có các chương trình khuyến mãi, giảm giá hấp dẫn thường xuyên, giúp bạn tiết kiệm chi phí mua sắm đáng kể mà vẫn sở hữu được những sản phẩm chất lượng cao.
+                        </p>
+                    </div>
+
+                    <div class="col-md-12 mb-4">
+                        <h3>Cam Kết Chất Lượng Và Giá Cả Cạnh Tranh</h3>
+                        <p>
+                            Một trong những điều mà KLDShop tự hào nhất chính là cam kết về chất lượng sản phẩm. Chúng tôi chỉ hợp tác với các nhà cung cấp, nhà phân phối chính hãng uy tín, đảm bảo 100% sản phẩm bán tại KLDShop đều là hàng chính hãng, có nguồn gốc xuất xứ rõ ràng. 
+                            Mỗi sản phẩm trước khi được đưa lên website đều trải qua quá trình kiểm định chất lượng nghiêm ngặt, đảm bảo đáp ứng các tiêu chuẩn về chất lượng và an toàn cho người tiêu dùng. 
+                            Tất cả sản phẩm đều được cung cấp kèm theo tem chống hàng giả, phiếu bảo hành chính hãng và hóa đơn VAT đầy đủ theo quy định của pháp luật.
+                        </p>
+                        <p>
+                            Về giá cả, KLDShop cam kết cung cấp mức giá cạnh tranh nhất thị trường. Chúng tôi có chính sách "Hoàn tiền 110% chênh lệch" nếu bạn tìm thấy sản phẩm tương tự với giá thấp hơn tại bất kỳ cửa hàng trực tuyến nào khác. 
+                            Điều này thể hiện sự tự tin của chúng tôi về mức giá cạnh tranh mà mình đang cung cấp. Bên cạnh đó, chúng tôi thường xuyên có các chương trình flash sale, deal sốc, mã giảm giá độc quyền dành riêng cho khách hàng thành viên, giúp bạn tiết kiệm tối đa chi phí mua sắm.
+                        </p>
+                    </div>
+
+                    <div class="col-md-12 mb-4">
+                        <h3>Dịch Vụ Giao Hàng Nhanh Chóng Toàn Quốc</h3>
+                        <p>
+                            Hiểu được tầm quan trọng của thời gian giao hàng đối với khách hàng, KLDShop đã xây dựng hệ thống vận chuyển chuyên nghiệp với đội ngũ giao hàng rộng khắp cả nước. 
+                            Chúng tôi hợp tác với các đơn vị vận chuyển uy tín hàng đầu tại Việt Nam để đảm bảo hàng hóa được giao đến tay khách hàng nhanh chóng, an toàn và nguyên vẹn nhất. 
+                            Đối với khu vực nội thành các thành phố lớn như TP.HCM, Hà Nội, Đà Nẵng, thời gian giao hàng chỉ từ 1-2 ngày làm việc. Các tỉnh thành khác trên cả nước, thời gian giao hàng từ 3-5 ngày làm việc.
+                        </p>
+                        <p>
+                            Đặc biệt, KLDShop áp dụng chính sách miễn phí vận chuyển cho tất cả đơn hàng có giá trị từ 500.000đ trở lên. Đây là một ưu đãi lớn giúp khách hàng tiết kiệm chi phí mua sắm. 
+                            Đối với các đơn hàng có giá trị cao hoặc sản phẩm dễ vỡ, chúng tôi sử dụng vật liệu đóng gói đặc biệt và có bảo hiểm hàng hóa trong quá trình vận chuyển. 
+                            Khách hàng có thể theo dõi trạng thái đơn hàng theo thời gian thực thông qua mã vận đơn, giúp bạn chủ động trong việc nhận hàng.
+                        </p>
+                    </div>
+
+                    <div class="col-md-12 mb-4">
+                        <h3>Chính Sách Đổi Trả Linh Hoạt - Bảo Vệ Quyền Lợi Khách Hàng</h3>
+                        <p>
+                            Chúng tôi hiểu rằng mua sắm trực tuyến đôi khi khiến khách hàng băn khoăn về chất lượng sản phẩm khi chưa được nhìn thấy và sờ tận tay. 
+                            Vì vậy, KLDShop đã xây dựng chính sách đổi trả linh hoạt và khách hàng làm trung tâm. Bạn có quyền đổi trả sản phẩm trong vòng 30 ngày kể từ ngày nhận hàng nếu sản phẩm có bất kỳ lỗi nào từ nhà sản xuất, không đúng mô tả, hoặc đơn giản là không vừa ý. 
+                            Quy trình đổi trả được thiết kế đơn giản, nhanh chóng: chỉ cần liên hệ với bộ phận chăm sóc khách hàng, chúng tôi sẽ sắp xếp đơn vị vận chuyển đến tận nơi lấy hàng hoàn toàn miễn phí.
+                        </p>
+                        <p>
+                            Đối với các sản phẩm bị lỗi kỹ thuật từ nhà sản xuất, KLDShop cam kết đổi sản phẩm mới trong vòng 3-5 ngày làm việc hoặc hoàn tiền 100% giá trị đơn hàng. 
+                            Chúng tôi không hỏi han nhiều, không làm khó khách hàng trong quá trình đổi trả. Sự hài lòng và quyền lợi của khách hàng luôn là ưu tiên số một của KLDShop. 
+                            Chính vì vậy, bạn có thể hoàn toàn yên tâm khi mua sắm tại KLDShop, biết rằng mình luôn được bảo vệ và hỗ trợ tốt nhất.
+                        </p>
+                    </div>
+
+                    <div class="col-md-12 mb-4">
+                        <h3>Thanh Toán An Toàn Với Nhiều Hình Thức</h3>
+                        <p>
+                            KLDShop cung cấp đa dạng các phương thức thanh toán để khách hàng có thể lựa chọn hình thức phù hợp nhất với mình. 
+                            Phương thức phổ biến nhất là thanh toán khi nhận hàng (COD - Cash On Delivery), cho phép bạn kiểm tra sản phẩm trước khi thanh toán cho nhân viên giao hàng. 
+                            Đây là hình thức thanh toán được nhiều khách hàng ưa chuộng vì tính an toàn và tiện lợi cao. Bên cạnh đó, chúng tôi cũng hỗ trợ thanh toán online qua chuyển khoản ngân hàng, ví điện tử như Momo, ZaloPay, VNPay, ShopeePay, và thẻ tín dụng/ghi nợ quốc tế Visa, MasterCard, JCB.
+                        </p>
+                        <p>
+                            Tất cả các giao dịch thanh toán trực tuyến tại KLDShop đều được bảo vệ bởi công nghệ mã hóa SSL/TLS 256-bit tiên tiến nhất, đảm bảo thông tin tài khoản và thẻ ngân hàng của bạn được bảo mật tuyệt đối. 
+                            Chúng tôi tuân thủ nghiêm ngặt các tiêu chuẩn bảo mật thanh toán quốc tế PCI DSS, cam kết không lưu trữ thông tin thẻ của khách hàng trên hệ thống. 
+                            Đặc biệt, đối với các đơn hàng có giá trị lớn, chúng tôi còn hỗ trợ phương thức trả góp 0% lãi suất qua thẻ tín dụng hoặc các công ty tài chính uy tín như Home Credit, FE Credit, giúp bạn dễ dàng sở hữu sản phẩm yêu thích mà không lo về tài chính.
+                        </p>
+                    </div>
+
+                    <div class="col-md-12">
+                        <h3>Chương Trình Khách Hàng Thân Thiết</h3>
+                        <p>
+                            Để tri ân sự ủng hộ của khách hàng, KLDShop đã xây dựng chương trình khách hàng thân thiết với nhiều ưu đãi hấp dẫn. 
+                            Khi đăng ký thành viên và mua sắm tại KLDShop, bạn sẽ tích lũy điểm thưởng cho mỗi đơn hàng. Điểm thưởng này có thể sử dụng để đổi lấy voucher giảm giá, quà tặng hoặc giảm trừ trực tiếp vào đơn hàng tiếp theo. 
+                            Thành viên VIP còn được hưởng nhiều đặc quyền như ưu tiên xử lý đơn hàng, giao hàng nhanh, tham gia các chương trình flash sale sớm hơn, nhận mã giảm giá độc quyền và nhiều ưu đãi khác.
+                        </p>
+                        <p>
+                            Ngoài ra, chúng tôi thường xuyên tổ chức các chương trình khuyến mãi đặc biệt vào các dịp lễ, Tết, sinh nhật thành viên với mức giảm giá lên đến 50-70%. 
+                            Đăng ký nhận bản tin email từ KLDShop để không bỏ lỡ bất kỳ ưu đãi nào. Hãy trở thành thành viên của gia đình KLDShop ngay hôm nay để tận hưởng những đặc quyền và ưu đãi tuyệt vời này. 
+                            Chúng tôi cam kết sẽ luôn đồng hành cùng bạn, mang đến những trải nghiệm mua sắm tuyệt vời nhất với dịch vụ chăm sóc khách hàng chuyên nghiệp, tận tâm 24/7.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function addToCart(productId, quantity) {
+            $.post('@Url.Action("AddToCart", "Cart")', {
+                productId: productId,
+                quantity: quantity
+            }, function (data) {
+                if (data.success) {
+                    KLDShop.showNotification('success', data.message);
+                    updateCartBadge();
+                } else {
+                    KLDShop.showNotification('danger', data.message);
+                }
+            });
+        }
+
+        function updateCartBadge() {
+            $.get('@Url.Action("GetCartSummary", "Cart")', function (data) {
+                $('#cart-count').text(data.itemCount);
+            });
+        }
+
+        // Initialize cart badge on page load
+        updateCartBadge();
+    </script>
+}

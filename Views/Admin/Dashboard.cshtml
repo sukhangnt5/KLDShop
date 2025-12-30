@@ -1,0 +1,180 @@
+@{
+    ViewData["Title"] = "Admin Dashboard - KLDShop";
+    var totalUsers = ViewBag.TotalUsers;
+    var totalProducts = ViewBag.TotalProducts;
+    var totalOrders = ViewBag.TotalOrders;
+    var totalRevenue = ViewBag.TotalRevenue;
+    var pendingOrders = ViewBag.PendingOrders;
+}
+
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="h3 d-inline-block">
+                <i class="bi bi-speedometer2"></i> Admin Dashboard
+            </h1>
+            <div class="float-end">
+                <form method="post" asp-area="" asp-controller="Account" asp-action="Logout" style="display: inline;">
+                    <button type="submit" class="btn btn-danger btn-sm">
+                        <i class="bi bi-box-arrow-right"></i> Đăng Xuất
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h6 class="text-muted mb-2">Tổng Người Dùng</h6>
+                            <h3 class="text-primary mb-0">@totalUsers</h3>
+                        </div>
+                        <i class="bi bi-people fs-1 text-primary opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h6 class="text-muted mb-2">Tổng Sản Phẩm</h6>
+                            <h3 class="text-success mb-0">@totalProducts</h3>
+                        </div>
+                        <i class="bi bi-box fs-1 text-success opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h6 class="text-muted mb-2">Tổng Đơn Hàng</h6>
+                            <h3 class="text-info mb-0">@totalOrders</h3>
+                        </div>
+                        <i class="bi bi-bag fs-1 text-info opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h6 class="text-muted mb-2">Tổng Doanh Thu</h6>
+                            <h3 class="text-warning mb-0">@totalRevenue đ</h3>
+                        </div>
+                        <i class="bi bi-cash-coin fs-1 text-warning opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alert for Pending Orders -->
+    @if (pendingOrders > 0)
+    {
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+            <strong>Có @pendingOrders đơn hàng chờ xử lý!</strong>
+            <a href="@Url.Action("Orders", "Admin")" class="alert-link">Xem danh sách</a>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <!-- Quick Actions -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h5 class="mb-3">Quản Lý Nhanh</h5>
+        </div>
+        <div class="col-md-3 mb-3">
+            <a href="@Url.Action("Users", "Admin")" class="card text-decoration-none shadow-sm border-0 h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-people fs-2 text-primary mb-3"></i>
+                    <h6 class="card-title">Người Dùng</h6>
+                    <p class="card-text text-muted">Quản lý tài khoản người dùng</p>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-3 mb-3">
+            <a href="@Url.Action("Products", "Admin")" class="card text-decoration-none shadow-sm border-0 h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-box fs-2 text-success mb-3"></i>
+                    <h6 class="card-title">Sản Phẩm</h6>
+                    <p class="card-text text-muted">Quản lý danh sách sản phẩm</p>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-3 mb-3">
+            <a href="@Url.Action("Orders", "Admin")" class="card text-decoration-none shadow-sm border-0 h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-bag fs-2 text-info mb-3"></i>
+                    <h6 class="card-title">Đơn Hàng</h6>
+                    <p class="card-text text-muted">Quản lý đơn hàng khách</p>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-3 mb-3">
+            <a href="@Url.Action("Statistics", "Admin")" class="card text-decoration-none shadow-sm border-0 h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-graph-up fs-2 text-warning mb-3"></i>
+                    <h6 class="card-title">Thống Kê</h6>
+                    <p class="card-text text-muted">Xem báo cáo thống kê</p>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-3 mb-3">
+            <a href="@Url.Action("Newsletter", "Admin")" class="card text-decoration-none shadow-sm border-0 h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-envelope-at fs-2 text-danger mb-3"></i>
+                    <h6 class="card-title">Newsletter</h6>
+                    <p class="card-text text-muted">Quản lý email marketing</p>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <!-- Recent Orders -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-clock-history"></i> Đơn Hàng Gần Đây
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">
+                        <a href="@Url.Action("Orders", "Admin")" class="btn btn-sm btn-primary">
+                            Xem tất cả đơn hàng
+                        </a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border-radius: 10px;
+    }
+
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+    }
+</style>

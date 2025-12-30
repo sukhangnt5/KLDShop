@@ -1,0 +1,229 @@
+@model List<Order>
+
+@{
+    ViewData["Title"] = "Đơn Hàng Của Tôi - KLDShop";
+    var currentPage = ViewBag.CurrentPage ?? 1;
+    var totalPages = ViewBag.TotalPages ?? 1;
+}
+
+<div class="container py-5">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-3 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-person-circle"></i> Tài Khoản
+                    </h5>
+                </div>
+                <div class="list-group list-group-flush">
+                    <a href="@Url.Action("Profile", "Account")" class="list-group-item list-group-item-action">
+                        <i class="bi bi-person"></i> Hồ Sơ Cá Nhân
+                    </a>
+                    <a href="@Url.Action("MyOrders", "Order")" class="list-group-item list-group-item-action active">
+                        <i class="bi bi-bag"></i> Đơn Hàng Của Tôi
+                    </a>
+                    <form method="post" action="@Url.Action("Logout", "Account")" style="display: inline;">
+                        <button type="submit" class="list-group-item list-group-item-action text-danger" style="border: none; background: none; width: 100%; text-align: left; padding: 0.75rem 1rem;">
+                            <i class="bi bi-box-arrow-right"></i> Đăng Xuất
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="col-md-9">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-bag"></i> Đơn Hàng Của Tôi
+                    </h5>
+                </div>
+                <div class="card-body">
+                    @if (Model == null || !Model.Any())
+                    {
+                        <div class="alert alert-info text-center">
+                            <i class="bi bi-inbox"></i> Bạn chưa có đơn hàng nào.
+                            <br>
+                            <a href="@Url.Action("List", "Product")" class="btn btn-sm btn-primary mt-3">
+                                <i class="bi bi-shop"></i> Mua Sắm Ngay
+                            </a>
+                        </div>
+                    }
+                    else
+                    {
+                        <!-- Orders Table -->
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Mã Đơn Hàng</th>
+                                        <th>Ngày Đặt</th>
+                                        <th>Trạng Thái</th>
+                                        <th>Thanh Toán</th>
+                                        <th>Tổng Tiền</th>
+                                        <th>Hành Động</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var order in Model)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <strong>@order.OrderNumber</strong><br>
+                                                <small class="text-muted">ID: #@order.OrderId</small>
+                                            </td>
+                                            <td>
+                                                @order.OrderDate.ToString("dd/MM/yyyy HH:mm")
+                                            </td>
+                                            <td>
+                                                @{
+                                                    string statusBadge = order.Status switch
+                                                    {
+                                                        "Pending" => "warning",
+                                                        "Confirmed" => "info",
+                                                        "Processing" => "primary",
+                                                        "Shipped" => "secondary",
+                                                        "Delivered" => "success",
+                                                        "Cancelled" => "danger",
+                                                        _ => "secondary"
+                                                    };
+                                                    
+                                                    string statusText = order.Status switch
+                                                    {
+                                                        "Pending" => "Chờ Xử Lý",
+                                                        "Confirmed" => "Đã Xác Nhận",
+                                                        "Processing" => "Đang Xử Lý",
+                                                        "Shipped" => "Đã Gửi",
+                                                        "Delivered" => "Đã Giao",
+                                                        "Cancelled" => "Đã Hủy",
+                                                        _ => order.Status
+                                                    };
+                                                }
+                                                <span class="badge bg-@statusBadge">@statusText</span>
+                                            </td>
+                                            <td>
+                                                @{
+                                                    string paymentBadge = order.PaymentStatus switch
+                                                    {
+                                                        "Paid" => "success",
+                                                        "Completed" => "success",
+                                                        "Unpaid" => "warning",
+                                                        "Pending" => "info",
+                                                        "Refunded" => "secondary",
+                                                        _ => "secondary"
+                                                    };
+                                                    
+                                                    string paymentText = order.PaymentStatus switch
+                                                    {
+                                                        "Paid" => "Đã Thanh Toán",
+                                                        "Completed" => "Đã Thanh Toán",
+                                                        "Unpaid" => "Chưa Thanh Toán",
+                                                        "Pending" => "Chờ Xác Nhận",
+                                                        "Refunded" => "Đã Hoàn Tiền",
+                                                        _ => order.PaymentStatus
+                                                    };
+                                                }
+                                                <span class="badge bg-@paymentBadge">@paymentText</span>
+                                            </td>
+                                            <td>
+                                                <strong>@order.FinalAmount.ToString("#,##0")đ</strong>
+                                            </td>
+                                            <td>
+                                                <a href="@Url.Action("Details", "Order", new { id = order.OrderId })" class="btn btn-sm btn-info">
+                                                    <i class="bi bi-eye"></i> Chi Tiết
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Pagination -->
+                        @if (totalPages > 1)
+                        {
+                            <nav aria-label="Page navigation">
+                                <ul class="pagination justify-content-center">
+                                    @if (currentPage > 1)
+                                    {
+                                        <li class="page-item">
+                                            <a class="page-link" href="@Url.Action("MyOrders", "Order", new { page = currentPage - 1 })">
+                                                <i class="bi bi-chevron-left"></i> Trang Trước
+                                            </a>
+                                        </li>
+                                    }
+
+                                    @for (int i = 1; i <= totalPages; i++)
+                                    {
+                                        @if (i == currentPage)
+                                        {
+                                            <li class="page-item active">
+                                                <span class="page-link">@i</span>
+                                            </li>
+                                        }
+                                        else
+                                        {
+                                            <li class="page-item">
+                                                <a class="page-link" href="@Url.Action("MyOrders", "Order", new { page = i })">@i</a>
+                                            </li>
+                                        }
+                                    }
+
+                                    @if (currentPage < totalPages)
+                                    {
+                                        <li class="page-item">
+                                            <a class="page-link" href="@Url.Action("MyOrders", "Order", new { page = currentPage + 1 })">
+                                                Trang Sau <i class="bi bi-chevron-right"></i>
+                                            </a>
+                                        </li>
+                                    }
+                                </ul>
+                            </nav>
+                        }
+                    }
+                </div>
+            </div>
+
+            <!-- Order Statistics -->
+            @if (Model != null && Model.Any())
+            {
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <div class="card shadow-sm">
+                            <div class="card-body text-center">
+                                <h6 class="text-muted">Tổng Đơn Hàng</h6>
+                                <h3 class="text-primary">@Model.Count</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card shadow-sm">
+                            <div class="card-body text-center">
+                                <h6 class="text-muted">Tổng Chi Tiêu</h6>
+                                <h3 class="text-success">@Model.Sum(o => o.FinalAmount).ToString("#,##0")đ</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        border: none;
+        border-radius: 10px;
+    }
+
+    .table-hover tbody tr:hover {
+        background-color: #f8f9fa;
+    }
+
+    .list-group-item.active {
+        background-color: #0c63e4;
+        border-color: #0c63e4;
+    }
+</style>

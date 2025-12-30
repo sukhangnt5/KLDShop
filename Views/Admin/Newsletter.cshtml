@@ -1,0 +1,186 @@
+@model IEnumerable<KLDShop.Models.Newsletter>
+@{
+    ViewData["Title"] = "Quản Lý Newsletter";
+}
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col">
+            <h2><i class="bi bi-envelope-at"></i> Quản Lý Newsletter</h2>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a asp-action="Dashboard">Dashboard</a></li>
+                    <li class="breadcrumb-item active">Newsletter</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show">
+            @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h5><i class="bi bi-people-fill"></i> Tổng Subscribers</h5>
+                    <h3>@ViewBag.TotalSubscribers</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h5><i class="bi bi-check-circle"></i> Đang Hoạt Động</h5>
+                    <h3>@ViewBag.ActiveSubscribers</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <h5><i class="bi bi-clock"></i> Hôm Nay</h5>
+                    <h3>@ViewBag.TodaySubscribers</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <h5><i class="bi bi-envelope"></i> Tổng Campaigns</h5>
+                    <h3>@ViewBag.TotalCampaigns</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <a asp-action="CreateCampaign" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> Tạo Campaign Mới
+            </a>
+            <a asp-action="Campaigns" class="btn btn-outline-primary">
+                <i class="bi bi-mailbox"></i> Xem Campaigns
+            </a>
+        </div>
+        <div class="col-md-6 text-end">
+            <button class="btn btn-success" onclick="exportSubscribers()">
+                <i class="bi bi-download"></i> Xuất Danh Sách
+            </button>
+        </div>
+    </div>
+
+    <!-- Subscribers List -->
+    <div class="card">
+        <div class="card-header">
+            <h5><i class="bi bi-list"></i> Danh Sách Subscribers</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Email</th>
+                            <th>Tên</th>
+                            <th>Ngày Đăng Ký</th>
+                            <th>Nguồn</th>
+                            <th>Trạng Thái</th>
+                            <th>Thao Tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model != null && Model.Any())
+                        {
+                            @foreach (var subscriber in Model)
+                            {
+                                <tr>
+                                    <td>@subscriber.NewsletterId</td>
+                                    <td>@subscriber.Email</td>
+                                    <td>@(string.IsNullOrEmpty(subscriber.FirstName) ? "-" : $"{subscriber.FirstName} {subscriber.LastName}")</td>
+                                    <td>@subscriber.SubscribedAt.ToString("dd/MM/yyyy HH:mm")</td>
+                                    <td>
+                                        <span class="badge bg-info">@(subscriber.Source ?? "website")</span>
+                                    </td>
+                                    <td>
+                                        @if (subscriber.IsActive)
+                                        {
+                                            <span class="badge bg-success">
+                                                <i class="bi bi-check-circle"></i> Hoạt động
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary">
+                                                <i class="bi bi-x-circle"></i> Đã hủy
+                                            </span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (subscriber.IsActive)
+                                        {
+                                            <form method="post" asp-action="UnsubscribeUser" style="display: inline;">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="email" value="@subscriber.Email" />
+                                                <button type="submit" class="btn btn-sm btn-warning" onclick="return confirm('Xác nhận hủy đăng ký?')">
+                                                    <i class="bi bi-x"></i> Hủy
+                                                </button>
+                                            </form>
+                                        }
+                                        <button class="btn btn-sm btn-danger" onclick="deleteSubscriber(@subscriber.NewsletterId)">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="7" class="text-center">Chưa có subscriber nào</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function deleteSubscriber(id) {
+            if (confirm('Bạn có chắc chắn muốn xóa subscriber này?')) {
+                $.ajax({
+                    url: '@Url.Action("DeleteSubscriber", "Admin")',
+                    type: 'POST',
+                    data: { id: id },
+                    headers: {
+                        'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                    },
+                    success: function(result) {
+                        if (result.success) {
+                            location.reload();
+                        } else {
+                            alert('Có lỗi xảy ra: ' + result.message);
+                        }
+                    },
+                    error: function() {
+                        alert('Có lỗi xảy ra khi xóa subscriber');
+                    }
+                });
+            }
+        }
+
+        function exportSubscribers() {
+            window.location.href = '@Url.Action("ExportSubscribers", "Admin")';
+        }
+    </script>
+}

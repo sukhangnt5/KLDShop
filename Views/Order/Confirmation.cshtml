@@ -1,0 +1,351 @@
+@model Order
+
+@{
+    ViewData["Title"] = "Xác Nhận Đơn Hàng - KLDShop";
+}
+
+<div class="container py-5">
+<div class="row">
+    <div class="col-lg-8">
+        <!-- Success Message -->
+        <div class="alert alert-success mb-4">
+            <div class="d-flex align-items-center">
+                <i class="bi bi-check-circle" style="font-size: 2rem; margin-right: 15px;"></i>
+                <div>
+                    <h4 class="mb-1">Thanh toán thành công!</h4>
+                    <p class="mb-0">Cảm ơn bạn đã mua hàng. Đơn hàng của bạn đã được xác nhận.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Order Details -->
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Thông Tin Đơn Hàng</h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <strong>Mã Đơn Hàng:</strong><br>
+                        <span>@Model?.OrderNumber</span>
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Ngày Đặt:</strong><br>
+                        <span>@Model?.OrderDate.ToString("dd/MM/yyyy HH:mm")</span>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <strong>Trạng Thái Đơn Hàng:</strong><br>
+                        @{
+                            var statusBadge = Model?.Status switch
+                            {
+                                "Confirmed" => "bg-success",
+                                "Shipped" => "bg-info",
+                                "Delivered" => "bg-primary",
+                                "Cancelled" => "bg-danger",
+                                _ => "bg-secondary"
+                            };
+                            
+                            var statusText = Model?.Status switch
+                            {
+                                "Confirmed" => "✓ Đã Xác Nhận",
+                                "Shipped" => "🚚 Đang Giao",
+                                "Delivered" => "✓ Đã Giao",
+                                "Cancelled" => "✗ Đã Huỷ",
+                                _ => Model?.Status
+                            };
+                        }
+                        <span class="badge @statusBadge">@statusText</span>
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Trạng Thái Thanh Toán:</strong><br>
+                        @{
+                            var paymentBadge = Model?.PaymentStatus switch
+                            {
+                                "Paid" => "bg-success",
+                                "Completed" => "bg-success",
+                                "Pending" => "bg-warning",
+                                "Failed" => "bg-danger",
+                                _ => "bg-secondary"
+                            };
+                            
+                            var paymentText = Model?.PaymentStatus switch
+                            {
+                                "Paid" => "✓ Đã Thanh Toán",
+                                "Completed" => "✓ Đã Thanh Toán",
+                                "Pending" => "⏳ Chờ Thanh Toán",
+                                "Failed" => "✗ Thất Bại",
+                                _ => Model?.PaymentStatus
+                            };
+                        }
+                        <span class="badge @paymentBadge">@paymentText</span>
+                    </div>
+                </div>
+
+                <hr>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <strong>Phương Thức Thanh Toán:</strong><br>
+                        <span>
+                            @if (Model?.Payment != null)
+                            {
+                                @Model.Payment.PaymentMethod
+                                if (!string.IsNullOrEmpty(Model.Payment.TransactionId))
+                                {
+                                    <br>
+                                    <small class="text-muted">ID: @Model.Payment.TransactionId</small>
+                                }
+                            }
+                            else
+                            {
+                                <span class="text-muted">Chưa xác định</span>
+                            }
+                        </span>
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Ngày Thanh Toán:</strong><br>
+                        <span>
+                            @if (Model?.Payment?.PaymentDate != null)
+                            {
+                                @Model.Payment.PaymentDate.Value.ToString("dd/MM/yyyy HH:mm")
+                            }
+                            else
+                            {
+                                <span class="text-muted">-</span>
+                            }
+                        </span>
+                    </div>
+                </div>
+
+                <hr>
+
+                <h6>📍 Địa chỉ giao hàng:</h6>
+                <p class="mb-3">
+                    <strong>@Model?.ShippingRecipient</strong><br>
+                    @Model?.ShippingAddress<br>
+                    @Model?.ShippingWard, @Model?.ShippingDistrict, @Model?.ShippingCity @Model?.ShippingPostalCode<br>
+                    <i class="bi bi-telephone"></i> @Model?.ShippingPhone
+                </p>
+            </div>
+        </div>
+
+        <!-- Order Items -->
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Chi Tiết Sản Phẩm</h5>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Sản Phẩm</th>
+                            <th style="width: 15%;">Giá</th>
+                            <th style="width: 15%;">Số Lượng</th>
+                            <th style="width: 15%;">Tổng</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model?.OrderDetails != null && Model.OrderDetails.Count > 0)
+                        {
+                            @foreach (var detail in Model.OrderDetails)
+                            {
+                                <tr>
+                                    <td>@detail.Product?.ProductName</td>
+                                    <td>@detail.UnitPrice.ToString("#,##0")đ</td>
+                                    <td>@detail.Quantity</td>
+                                    <td><strong>@detail.TotalPrice.ToString("#,##0")đ</strong></td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Next Steps -->
+        <div class="card bg-light">
+            <div class="card-body">
+                <h6 class="mb-3">Bước tiếp theo:</h6>
+                <ul class="mb-0">
+                    <li>Kiểm tra email để nhận xác nhận đơn hàng</li>
+                    <li>Đơn hàng của bạn sẽ được chuẩn bị trong 24 giờ</li>
+                    <li>Bạn sẽ nhận được thông báo khi hàng được gửi đi</li>
+                    <li>Theo dõi đơn hàng tại mục "Đơn Hàng Của Tôi"</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Order Summary -->
+    <div class="col-lg-4">
+        <div class="card sticky-top" style="top: 20px;">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Tóm Tắt Đơn Hàng</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Tổng tiền hàng:</span>
+                        <strong>@Model?.TotalAmount.ToString("#,##0")đ</strong>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Giảm giá:</span>
+                        <strong class="text-success">-@Model?.DiscountAmount.ToString("#,##0")đ</strong>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Thuế:</span>
+                        <strong>@Model?.TaxAmount.ToString("#,##0")đ</strong>
+                    </div>
+                    <div class="d-flex justify-content-between mb-3">
+                        <span>Vận chuyển:</span>
+                        <strong>@Model?.ShippingCost.ToString("#,##0")đ</strong>
+                    </div>
+
+                    <hr>
+
+                    <div class="d-flex justify-content-between mb-3">
+                        <span class="fw-bold">Tổng Cộng:</span>
+                        <span class="h5 text-danger fw-bold">@Model?.FinalAmount.ToString("#,##0")đ</span>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="d-grid gap-2">
+                    <button onclick="window.print()" class="btn btn-outline-secondary">
+                        <i class="bi bi-printer"></i> In Hoá Đơn
+                    </button>
+                    <a href="@Url.Action("Details", "Order", new { id = Model?.OrderId })" class="btn btn-primary">
+                        <i class="bi bi-eye"></i> Xem Chi Tiết Đơn Hàng
+                    </a>
+                    <a href="@Url.Action("MyOrders", "Order")" class="btn btn-outline-secondary">
+                        <i class="bi bi-list"></i> Đơn Hàng Của Tôi
+                    </a>
+                    <a href="@Url.Action("List", "Product")" class="btn btn-outline-primary">
+                        <i class="bi bi-shop"></i> Tiếp Tục Mua Sắm
+                    </a>
+                </div>
+
+                <!-- Contact Info -->
+                <hr>
+                <p class="small text-muted mb-0">
+                    <strong>Cần hỗ trợ?</strong><br>
+                    Liên hệ: support@kldshop.com<br>
+                    Hotline: 0123 456 789
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+
+@section Scripts {
+    <script>
+        // Auto-print or show success
+        $(document).ready(function () {
+            console.log('Đơn hàng đã được tạo thành công!');
+        });
+    </script>
+}
+
+@section Styles {
+    <style>
+        /* Print styles */
+        @@media print {
+            body {
+                margin: 0;
+                padding: 0;
+            }
+            .container {
+                max-width: 100%;
+            }
+            .sticky-top {
+                position: static !important;
+                margin-top: 20px;
+            }
+            .btn, .navbar, .footer {
+                display: none;
+            }
+            .card {
+                page-break-inside: avoid;
+                box-shadow: none;
+                border: 1px solid #ddd;
+            }
+            .alert {
+                border: 2px solid #28a745;
+                background-color: #f8f9fa;
+                color: #000;
+            }
+        }
+
+        /* Confirmation page styles */
+        .badge {
+            font-size: 0.95rem;
+            padding: 0.5rem 0.75rem;
+        }
+        
+        .card {
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+            border: none;
+        }
+        
+        .card-header {
+            border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .table-hover tbody tr:hover {
+            background-color: #f5f5f5;
+        }
+
+        .alert {
+            border-radius: 8px;
+            border-left: 4px solid #28a745;
+        }
+
+        .btn {
+            border-radius: 6px;
+            font-weight: 500;
+        }
+
+        .sticky-top {
+            top: 20px;
+        }
+
+        h6 {
+            color: #333;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+
+        .text-muted {
+            color: #6c757d !important;
+        }
+
+        .bg-light {
+            background-color: #f8f9fa !important;
+            border-radius: 8px;
+        }
+
+        /* Success icon animation */
+        @@keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .alert {
+            animation: slideInRight 0.5s ease-out;
+        }
+
+        .bi-check-circle {
+            color: #28a745;
+        }
+    </style>
+}

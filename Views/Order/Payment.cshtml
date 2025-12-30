@@ -1,0 +1,350 @@
+@model Order
+
+@{
+    ViewData["Title"] = "Thanh Toán - KLDShop";
+}
+
+<div class="row">
+    <div class="col-lg-8">
+        <!-- Progress Steps -->
+        <div class="mb-5">
+            <div class="row text-center">
+                <div class="col-4">
+                    <div class="step-circle">
+                        <i class="bi bi-check-lg"></i>
+                    </div>
+                    <p class="mt-2">Giỏ Hàng</p>
+                </div>
+                <div class="col-4">
+                    <div class="step-circle">
+                        <i class="bi bi-check-lg"></i>
+                    </div>
+                    <p class="mt-2">Thanh Toán</p>
+                </div>
+                <div class="col-4">
+                    <div class="step-circle active">
+                        <span>3</span>
+                    </div>
+                    <p class="mt-2">Xác Nhận</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Order Summary -->
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Tóm Tắt Đơn Hàng</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3 pb-3 border-bottom">
+                    <strong>Mã Đơn Hàng:</strong> @Model?.OrderNumber (ID: #@Model?.OrderId)
+                </div>
+
+                <div class="mb-3 pb-3 border-bottom">
+                    <strong>Địa Chỉ Giao Hàng:</strong><br>
+                    @Model?.ShippingRecipient<br>
+                    @Model?.ShippingAddress, @Model?.ShippingCity
+                </div>
+
+                <!-- Order Items -->
+                <div class="mb-3 pb-3 border-bottom">
+                    <strong>Sản Phẩm:</strong>
+                    @if (Model?.OrderDetails != null)
+                    {
+                        @foreach (var detail in Model.OrderDetails)
+                        {
+                            <div class="row mt-2">
+                                <div class="col-8">@detail.Product?.ProductName</div>
+                                <div class="col-2 text-end">@detail.Quantity x</div>
+                                <div class="col-2 text-end">@detail.TotalPrice.ToString("N0")đ</div>
+                            </div>
+                        }
+                    }
+                </div>
+
+                <!-- Costs -->
+                <div class="mb-3">
+                    <div class="row mb-2">
+                        <div class="col-8">Tổng Tiền Hàng:</div>
+                        <div class="col-4 text-end">@Model?.TotalAmount.ToString("N0")đ</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-8">Vận Chuyển:</div>
+                        <div class="col-4 text-end">@Model?.ShippingCost.ToString("N0")đ</div>
+                    </div>
+                    <div class="row mb-3 pb-3 border-bottom">
+                        <div class="col-8">Thuế:</div>
+                        <div class="col-4 text-end">@Model?.TaxAmount.ToString("N0")đ</div>
+                    </div>
+                    <div class="row">
+                        <div class="col-8"><strong>Tổng Cộng:</strong></div>
+                        <div class="col-4 text-end"><h5 class="text-danger fw-bold">@Model?.FinalAmount.ToString("N0")đ</h5></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Payment Info Section -->
+        @if (ViewBag.PaymentMethod == "VNPay")
+        {
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle"></i> <strong>Thanh Toán VNPay</strong><br>
+                <small>Bạn sẽ được chuyển hướng đến cổng thanh toán VNPay để hoàn tất giao dịch.</small>
+            </div>
+        }
+        else if (ViewBag.PaymentMethod == "PayPal")
+        {
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle"></i> <strong>Thanh Toán PayPal</strong><br>
+                <small>Popup thanh toán PayPal sẽ mở ra để bạn hoàn tất giao dịch an toàn.</small>
+            </div>
+            <!-- PayPal Buttons Container -->
+            <div id="paypal-button-container" class="mb-4"></div>
+        }
+        else if (ViewBag.PaymentMethod == "Cash")
+        {
+            <div class="alert alert-success">
+                <i class="bi bi-check-circle"></i> <strong>Thanh Toán Tiền Mặt</strong><br>
+                <small>Bạn sẽ thanh toán khi nhận hàng. Đơn hàng sẽ được xác nhận ngay sau khi bạn xác nhận.</small>
+            </div>
+        }
+
+        <!-- Terms -->
+        <div class="form-check mb-4">
+            <input class="form-check-input" type="checkbox" id="confirm-payment" required>
+            <label class="form-check-label" for="confirm-payment">
+                @if (ViewBag.PaymentMethod == "Cash")
+                {
+                    <span>Tôi xác nhận đơn hàng và sẽ thanh toán khi nhận hàng</span>
+                }
+                else
+                {
+                    <span>Tôi xác nhận thông tin thanh toán và chịu trách nhiệm về giao dịch này</span>
+                }
+            </label>
+        </div>
+
+        <!-- Submit Button -->
+        <div class="d-grid gap-2">
+            <button type="button" class="btn btn-success btn-lg" id="submit-payment" onclick="submitPayment()">
+                @if (ViewBag.PaymentMethod == "Cash")
+                {
+                    <span><i class="bi bi-check-circle"></i> Xác Nhận Đơn Hàng</span>
+                }
+                else
+                {
+                    <span><i class="bi bi-lock"></i> Thanh Toán Bây Giờ</span>
+                }
+            </button>
+            <a href="@Url.Action("Checkout", "Order")" class="btn btn-outline-secondary btn-lg">
+                <i class="bi bi-arrow-left"></i> Quay Lại
+            </a>
+        </div>
+    </div>
+</div>
+
+<style>
+    .step-circle {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background-color: #e9ecef;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto;
+        font-weight: bold;
+        font-size: 1.2rem;
+        border: 2px solid #dee2e6;
+    }
+
+    .step-circle.active {
+        background-color: #1b6ec2;
+        color: white;
+        border-color: #1b6ec2;
+    }
+</style>
+
+@{
+    var paypalClientId = Context.RequestServices.GetService(typeof(Microsoft.Extensions.Configuration.IConfiguration)) as Microsoft.Extensions.Configuration.IConfiguration;
+    var clientId = paypalClientId?["PayPal:ClientId"] ?? "YOUR_PAYPAL_CLIENT_ID";
+}
+
+@section Scripts {
+    <!-- PayPal Checkout Script -->
+    @if (ViewBag.PaymentMethod == "PayPal")
+    {
+        <script src="https://www.paypal.com/sdk/js?client-id=@clientId&currency=USD"></script>
+    }
+
+    <script>
+        // Submit payment function
+        function submitPayment() {
+            if (!$('#confirm-payment').is(':checked')) {
+                alert('Vui lòng xác nhận');
+                return false;
+            }
+
+            let orderId = @(Model?.OrderId ?? 0);
+            let paymentMethod = '@ViewBag.PaymentMethod';
+            
+            console.log('Order ID:', orderId);
+            console.log('Payment Method:', paymentMethod);
+
+            // Show loading state
+            $('#submit-payment').prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2"></span>Đang xử lý...');
+
+            // Nếu là tiền mặt, xác nhận luôn (không gọi ProcessPayment)
+            if (paymentMethod === 'Cash') {
+                setTimeout(function() {
+                    window.location.href = '@Url.Action("Confirmation", "Order")' + '/' + orderId;
+                }, 500);
+                return false;
+            }
+
+            // Nếu là PayPal, trigger PayPal button click
+            if (paymentMethod === 'PayPal') {
+                console.log('Triggering PayPal popup');
+                // Tìm và click PayPal button
+                let paypalButton = document.querySelector('#paypal-button-container button');
+                if (paypalButton) {
+                    paypalButton.click();
+                }
+                $('#submit-payment').prop('disabled', false).html('<i class="bi bi-lock"></i> Thanh Toán Bây Giờ');
+                return false;
+            }
+
+            // Nếu là VNPay, gọi ProcessPayment
+            console.log('Calling ProcessPayment with orderId:', orderId, 'paymentMethod:', paymentMethod);
+            
+            $.post('@Url.Action("ProcessPayment", "Order")', {
+                orderId: orderId,
+                paymentMethod: paymentMethod
+            }, function (data) {
+                console.log('ProcessPayment response:', data);
+                if (data.success) {
+                    if (paymentMethod === 'Cash') {
+                        // Redirect to confirmation
+                        window.location.href = '@Url.Action("Confirmation", "Order")' + '?id=' + orderId;
+                    } else {
+                        // Redirect to VNPay
+                        console.log('Redirecting to:', data.redirectUrl);
+                        window.location.href = data.redirectUrl;
+                    }
+                } else {
+                    alert('Lỗi: ' + data.message);
+                    $('#submit-payment').prop('disabled', false).html('<i class="bi bi-lock"></i> Thanh Toán Bây Giờ');
+                }
+            }).fail(function (xhr, status, error) {
+                console.log('Error:', error);
+                console.log('Response:', xhr.responseText);
+                alert('Lỗi kết nối. Vui lòng thử lại');
+                $('#submit-payment').prop('disabled', false).html('<i class="bi bi-lock"></i> Thanh Toán Bây Giờ');
+            });
+
+            return false;
+        }
+
+        // PayPal Checkout Initialization
+        @if (ViewBag.PaymentMethod == "PayPal")
+        {
+            <text>
+        paypal.Buttons({
+            createOrder: function(data, actions) {
+                let orderId = @(Model?.OrderId ?? 0);
+                let amount = "@(Model?.FinalAmount.ToString("F2"))";
+                
+                console.log('Creating PayPal order - OrderId:', orderId, 'Amount:', amount);
+                
+                return actions.order.create({
+                    purchase_units: [{
+                        amount: {
+                            value: amount,
+                            currency_code: 'USD'
+                        },
+                        description: 'Đơn hàng KLDShop #' + orderId
+                    }]
+                });
+            },
+            onApprove: function(data, actions) {
+                console.log('PayPal order approved:', data.orderID);
+                
+                return actions.order.capture().then(function(details) {
+                    console.log('========== PayPal Capture Response START ==========');
+                    console.log('Full details object:', JSON.stringify(details, null, 2));
+                    console.log('========== PayPal Capture Response END ==========');
+                    
+                    // Extract the capture transaction ID from PayPal response
+                    let transactionId = null;
+                    let orderIdFromPayPal = data.orderID;
+                    
+                    console.log('Extracting Transaction ID...');
+                    console.log('details.purchase_units exists?', !!details.purchase_units);
+                    
+                    if (details.purchase_units && details.purchase_units.length > 0) {
+                        console.log('purchase_units[0]:', details.purchase_units[0]);
+                        
+                        let payments = details.purchase_units[0].payments;
+                        console.log('payments object:', payments);
+                        
+                        if (payments && payments.captures && payments.captures.length > 0) {
+                            transactionId = payments.captures[0].id;
+                            console.log('✅ Found Capture ID:', transactionId);
+                        } else {
+                            console.error('❌ No captures found in payments object');
+                        }
+                    } else {
+                        console.error('❌ No purchase_units found');
+                    }
+                    
+                    // Fallback to order ID if capture ID not found
+                    if (!transactionId) {
+                        console.warn('⚠️ Capture ID not found, using order ID as fallback');
+                        transactionId = orderIdFromPayPal;
+                    }
+                    
+                    console.log('Final Transaction ID to send:', transactionId);
+                    console.log('PayPal Order ID:', orderIdFromPayPal);
+                    
+                    // Send order approval to server
+                    let approveUrl = '@Url.Action("ApprovePayPalPayment", "Order")';
+                    console.log('Approve URL:', approveUrl);
+                    console.log('Sending to server - orderId:', @(Model?.OrderId ?? 0), 'paypalOrderId:', orderIdFromPayPal, 'paypalTransactionId:', transactionId);
+                    
+                    $.post(approveUrl, {
+                        orderId: @(Model?.OrderId ?? 0),
+                        paypalOrderId: orderIdFromPayPal,
+                        paypalTransactionId: transactionId
+                    }, function(response) {
+                        console.log('Server response:', response);
+                        if (response.success) {
+                            // Clear cart from database
+                            console.log('Calling ClearCart...');
+                            $.post('@Url.Action("ClearCart", "Cart")', function(clearResponse) {
+                                console.log('Cart cleared response:', clearResponse);
+                                setTimeout(function() {
+                                    window.location.href = '@Url.Action("Confirmation", "Order")' + '?id=' + @(Model?.OrderId ?? 0);
+                                }, 500);
+                            }).fail(function(err) {
+                                console.error('ClearCart error:', err);
+                                window.location.href = '@Url.Action("Confirmation", "Order")' + '?id=' + @(Model?.OrderId ?? 0);
+                            });
+                        } else {
+                            alert('Lỗi: ' + response.message);
+                        }
+                    }).fail(function(jqXHR, textStatus, errorThrown) {
+                        console.error('AJAX error - Status:', jqXHR.status, 'Text:', textStatus, 'Error:', errorThrown);
+                        console.error('Response:', jqXHR.responseText);
+                        alert('Lỗi khi xác nhận thanh toán. Vui lòng liên hệ với chúng tôi.');
+                    });
+                });
+            },
+            onError: function(err) {
+                console.error('PayPal error:', err);
+                alert('Lỗi thanh toán PayPal. Vui lòng thử lại.');
+            }
+        }).render('#paypal-button-container');
+            </text>
+        }
+    </script>
+}

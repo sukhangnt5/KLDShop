@@ -1,0 +1,396 @@
+@{
+    ViewData["Title"] = "Thanh Toán - KLDShop";
+    ViewData["MetaDescription"] = "Thanh toán đơn hàng an toàn tại KLDShop. Hỗ trợ nhiều phương thức: COD, chuyển khoản, ví điện tử, thẻ tín dụng. Mã hóa SSL bảo mật tuyệt đối. Miễn phí vận chuyển cho đơn từ 500.000đ.";
+}
+
+<div class="row">
+    <!-- Main Content -->
+    <div class="col-lg-8">
+        <!-- Progress Steps -->
+        <div class="mb-5">
+            <div class="row text-center">
+                <div class="col-4">
+                    <div class="step-circle active">
+                        <span>1</span>
+                    </div>
+                    <p class="mt-2">Giỏ Hàng</p>
+                </div>
+                <div class="col-4">
+                    <div class="step-circle active">
+                        <span>2</span>
+                    </div>
+                    <p class="mt-2">Thanh Toán</p>
+                </div>
+                <div class="col-4">
+                    <div class="step-circle">
+                        <span>3</span>
+                    </div>
+                    <p class="mt-2">Xác Nhận</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Checkout Form -->
+        <form id="checkout-form" method="post" action="@Url.Action("ConfirmOrder", "Order")">
+            <!-- Hidden fields để bypass model validation -->
+            <input type="hidden" name="UserId" value="1">
+            <input type="hidden" name="OrderNumber" value="">
+            <input type="hidden" name="Status" value="Pending">
+            <input type="hidden" name="PaymentStatus" value="Unpaid">
+            <input type="hidden" name="Notes" value="">
+            
+            <!-- Shipping Address Section -->
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-geo-alt"></i> Địa Chỉ Giao Hàng
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Họ Tên <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" name="ShippingRecipient" placeholder="Nhập họ tên" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Số Điện Thoại <span class="text-danger">*</span></label>
+                            <input type="tel" class="form-control" name="ShippingPhone" placeholder="Nhập số điện thoại" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Địa Chỉ <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" name="ShippingAddress" placeholder="Nhập địa chỉ đầy đủ" required>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">Tỉnh/Thành Phố <span class="text-danger">*</span></label>
+                            <select class="form-select" name="ShippingCity" required>
+                                <option value="">-- Chọn Tỉnh/Thành Phố --</option>
+                                <option value="TP.HCM">TP. Hồ Chí Minh</option>
+                                <option value="Hà Nội">Hà Nội</option>
+                                <option value="Đà Nẵng">Đà Nẵng</option>
+                                <option value="Hải Phòng">Hải Phòng</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">Quận/Huyện</label>
+                            <input type="text" class="form-control" name="ShippingDistrict" placeholder="Nhập quận/huyện">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">Phường/Xã</label>
+                            <input type="text" class="form-control" name="ShippingWard" placeholder="Nhập phường/xã">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Mã Bưu Chính</label>
+                        <input type="text" class="form-control" name="ShippingPostalCode" placeholder="Nhập mã bưu chính (nếu có)">
+                    </div>
+
+                    <!-- Use Default Address Checkbox -->
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="use-default-address">
+                        <label class="form-check-label" for="use-default-address">
+                            Sử dụng địa chỉ mặc định
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Shipping Method Section -->
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-truck"></i> Phương Thức Giao Hàng
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="radio" name="ShippingMethod" id="express" value="express" checked>
+                        <label class="form-check-label" for="express">
+                            <strong>Giao Hàng Nhanh</strong> - 1-2 ngày (Phí: 50.000đ)
+                        </label>
+                    </div>
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="radio" name="ShippingMethod" id="standard" value="standard">
+                        <label class="form-check-label" for="standard">
+                            <strong>Giao Hàng Tiêu Chuẩn</strong> - 3-5 ngày (Miễn phí)
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="ShippingMethod" id="pickup" value="pickup">
+                        <label class="form-check-label" for="pickup">
+                            <strong>Lấy Tại Cửa Hàng</strong> - Hôm nay/Ngày mai (Miễn phí)
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payment Method Section -->
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-credit-card"></i> Phương Thức Thanh Toán
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="radio" name="PaymentMethod" id="paypal" value="PayPal" checked>
+                        <label class="form-check-label" for="paypal">
+                            <strong><i class="bi bi-credit-card"></i> PayPal</strong>
+                        </label>
+                    </div>
+
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="radio" name="PaymentMethod" id="vnpay" value="VNPay">
+                        <label class="form-check-label" for="vnpay">
+                            <strong><i class="bi bi-credit-card"></i> VNPay</strong>
+                        </label>
+                    </div>
+
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="PaymentMethod" id="cash" value="Cash">
+                        <label class="form-check-label" for="cash">
+                            <strong><i class="bi bi-cash-coin"></i> Tiền Mặt Khi Nhận</strong>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notes Section -->
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-chat-left-text"></i> Ghi Chú Đơn Hàng
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <textarea class="form-control" name="Notes" rows="3" placeholder="Ghi chú cho đơn hàng (không bắt buộc)"></textarea>
+                </div>
+            </div>
+
+            <!-- Terms & Conditions -->
+            <div class="form-check mb-4">
+                <input class="form-check-input" type="checkbox" id="terms" required>
+                <label class="form-check-label" for="terms">
+                    Tôi đồng ý với <a href="#">Điều Khoản & Điều Kiện</a> và <a href="#">Chính Sách Bảo Mật</a>
+                </label>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="d-grid gap-2">
+                <button type="button" class="btn btn-success btn-lg" id="submit-checkout" onclick="submitCheckout()">
+                    <i class="bi bi-credit-card"></i> Tiếp Tục Thanh Toán
+                </button>
+                <a href="@Url.Action("Index", "Cart")" class="btn btn-outline-secondary btn-lg">
+                    <i class="bi bi-arrow-left"></i> Quay Lại Giỏ Hàng
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Order Summary Sidebar -->
+    <div class="col-lg-4">
+        <div class="card sticky-top" style="top: 20px;">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Tóm Tắt Đơn Hàng</h5>
+            </div>
+            <div class="card-body">
+                <!-- Order Items -->
+                <div id="order-items" class="mb-4 pb-4 border-bottom">
+                    <!-- TODO: Load order items -->
+                    @for (int i = 1; i <= 2; i++)
+                    {
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Sản Phẩm @i × 2</span>
+                            <strong>@((1299 + i * 100).ToString("N0"))đ</strong>
+                        </div>
+                    }
+                </div>
+
+                <!-- Cost Summary -->
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Tổng tiền hàng:</span>
+                        <strong id="subtotal">3.897.000đ</strong>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Vận chuyển:</span>
+                        <strong id="shipping-fee">Miễn phí</strong>
+                    </div>
+                    <div class="d-flex justify-content-between mb-3">
+                        <span>Thuế:</span>
+                        <strong>0đ</strong>
+                    </div>
+
+                    <hr>
+
+                    <div class="d-flex justify-content-between mb-3">
+                        <span class="fw-bold">Tổng Cộng:</span>
+                        <span class="h5 text-danger fw-bold" id="total-amount">3.897.000đ</span>
+                    </div>
+                </div>
+
+                <!-- Info Box -->
+                <div class="alert alert-info small">
+                    <i class="bi bi-info-circle"></i> Bạn sẽ hoàn tất thanh toán ở bước tiếp theo
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .step-circle {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background-color: #e9ecef;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto;
+        font-weight: bold;
+        font-size: 1.2rem;
+        border: 2px solid #dee2e6;
+    }
+
+    .step-circle.active {
+        background-color: #1b6ec2;
+        color: white;
+        border-color: #1b6ec2;
+    }
+</style>
+
+<!-- Checkout Information Section -->
+<div class="row mt-5">
+    <div class="col-12">
+        <div class="card bg-light">
+            <div class="card-body">
+                <h3 class="text-center mb-4"><i class="bi bi-shield-check"></i> Thanh Toán An Toàn Tại KLDShop</h3>
+                <div class="row">
+                    <div class="col-md-6 mb-4">
+                        <h5 class="text-primary"><i class="bi bi-credit-card-2-front"></i> Các Phương Thức Thanh Toán</h5>
+                        <p><strong>KLDShop</strong> hỗ trợ đa dạng các phương thức thanh toán để mang lại sự thuận tiện tối đa cho khách hàng:</p>
+                        <ul class="mb-3">
+                            <li><strong>COD (Cash On Delivery):</strong> Thanh toán khi nhận hàng - Phổ biến nhất tại Việt Nam. Bạn có thể kiểm tra sản phẩm trước khi thanh toán cho nhân viên giao hàng. Phí COD có thể áp dụng tùy khu vực.</li>
+                            <li><strong>Chuyển khoản ngân hàng:</strong> Chuyển khoản trực tiếp qua các ngân hàng Vietcombank, Techcombank, VietinBank, BIDV, và hơn 40 ngân hàng khác. Đơn hàng được xử lý ngay sau khi nhận được xác nhận chuyển khoản.</li>
+                            <li><strong>Ví điện tử:</strong> Thanh toán nhanh chóng qua Momo, ZaloPay, VNPay, ShopeePay. Nhận nhiều ưu đãi và hoàn tiền khi thanh toán qua ví điện tử.</li>
+                            <li><strong>Thẻ tín dụng/ghi nợ:</strong> Chấp nhận thẻ Visa, MasterCard, JCB quốc tế. Hỗ trợ trả góp 0% lãi suất cho đơn hàng từ 3 triệu đồng.</li>
+                            <li><strong>Trả góp:</strong> Trả góp qua thẻ tín dụng hoặc các công ty tài chính như Home Credit, FE Credit với lãi suất ưu đãi.</li>
+                        </ul>
+                        <p class="text-muted small">
+                            Lưu ý: Một số phương thức thanh toán có thể không khả dụng tùy theo tổng giá trị đơn hàng và khu vực giao hàng.
+                        </p>
+                    </div>
+                    <div class="col-md-6 mb-4">
+                        <h5 class="text-success"><i class="bi bi-lock-fill"></i> Bảo Mật Thanh Toán</h5>
+                        <p>Chúng tôi cam kết bảo vệ thông tin thanh toán của bạn với các biện pháp bảo mật cao nhất:</p>
+                        <ul class="mb-3">
+                            <li><strong>Mã hóa SSL/TLS 256-bit:</strong> Tất cả thông tin thanh toán được mã hóa trong quá trình truyền tải, đảm bảo không ai có thể đánh cắp dữ liệu của bạn.</li>
+                            <li><strong>PCI DSS Compliant:</strong> Tuân thủ tiêu chuẩn bảo mật dữ liệu ngành thẻ thanh toán quốc tế.</li>
+                            <li><strong>3D Secure:</strong> Xác thực bổ sung cho giao dịch thẻ tín dụng/ghi nợ để ngăn chặn gian lận.</li>
+                            <li><strong>Không lưu trữ thông tin thẻ:</strong> KLDShop không lưu trữ số thẻ tín dụng hoặc mã CVV của bạn trên hệ thống.</li>
+                            <li><strong>Giám sát 24/7:</strong> Hệ thống được giám sát liên tục để phát hiện và ngăn chặn các giao dịch bất thường.</li>
+                        </ul>
+                        <h5 class="text-info mt-4"><i class="bi bi-truck"></i> Chính Sách Vận Chuyển</h5>
+                        <ul class="mb-0">
+                            <li><strong>Miễn phí vận chuyển</strong> cho đơn hàng từ 500.000đ trên toàn quốc.</li>
+                            <li><strong>Giao hàng nhanh:</strong> 1-3 ngày tại nội thành TP.HCM, Hà Nội, Đà Nẵng. 3-5 ngày tại các tỉnh thành khác.</li>
+                            <li><strong>Giao hàng hỏa tốc:</strong> Nhận hàng trong 3-4 giờ tại nội thành TP.HCM (phí phát sinh).</li>
+                            <li><strong>Kiểm tra hàng trước khi nhận:</strong> Bạn có quyền kiểm tra sản phẩm trước khi thanh toán với COD.</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="alert alert-info mt-3 mb-0">
+                    <i class="bi bi-info-circle-fill"></i> <strong>Lưu ý:</strong> 
+                    Vui lòng kiểm tra kỹ thông tin đơn hàng trước khi xác nhận thanh toán. Nếu có bất kỳ thắc mắc nào, 
+                    hãy liên hệ với chúng tôi qua Hotline <strong>1900-xxxx</strong> hoặc email <strong>support@kldshop.com</strong> 
+                    để được hỗ trợ tận tình.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Submit checkout function
+        function submitCheckout() {
+            console.log('submitCheckout called');
+            
+            if (!$('#terms').is(':checked')) {
+                alert('Vui lòng đồng ý với Điều Khoản & Điều Kiện');
+                return false;
+            }
+
+            // Validate required fields
+            let recipient = $('input[name="ShippingRecipient"]').val().trim();
+            let phone = $('input[name="ShippingPhone"]').val().trim();
+            let address = $('input[name="ShippingAddress"]').val().trim();
+            let city = $('select[name="ShippingCity"]').val();
+            let paymentMethod = $('input[name="PaymentMethod"]:checked').val();
+
+            if (!recipient || !phone || !address || !city) {
+                alert('Vui lòng điền đầy đủ thông tin giao hàng');
+                return false;
+            }
+
+            if (!paymentMethod) {
+                alert('Vui lòng chọn phương thức thanh toán');
+                return false;
+            }
+
+            // Show loading state
+            $('#submit-checkout').prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2"></span>Đang xử lý...');
+
+            // Submit form via AJAX
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("ConfirmOrder", "Order")',
+                data: $('#checkout-form').serialize(),
+                dataType: 'json',
+                success: function (data) {
+                    if (data.success) {
+                        if (data.paymentMethod === 'Cash') {
+                            // Redirect to confirmation
+                            window.location.href = '@Url.Action("Confirmation", "Order")' + '?id=' + data.orderId;
+                        } else {
+                            // Redirect to payment page
+                            window.location.href = '@Url.Action("Payment", "Order")' + '?orderId=' + data.orderId + '&paymentMethod=' + data.paymentMethod;
+                        }
+                    } else {
+                        alert('Lỗi: ' + data.message);
+                        $('#submit-checkout').prop('disabled', false).html('<i class="bi bi-credit-card"></i> Tiếp Tục Thanh Toán');
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.log('Error:', error);
+                    alert('Lỗi kết nối. Vui lòng thử lại');
+                    $('#submit-checkout').prop('disabled', false).html('<i class="bi bi-credit-card"></i> Tiếp Tục Thanh Toán');
+                }
+            });
+
+            return false;
+        }
+
+        // Shipping method change
+        $('input[name="ShippingMethod"]').change(function () {
+            let method = $(this).val();
+            let fee = 0;
+
+            if (method === 'express') {
+                fee = 50000;
+            }
+
+            $('#shipping-fee').text(fee === 0 ? 'Miễn phí' : fee.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') + 'đ');
+            updateTotal();
+        });
+
+        function updateTotal() {
+            // TODO: Calculate and update total
+        }
+    </script>
+}

@@ -1,0 +1,302 @@
+@model Order
+
+@{
+    ViewData["Title"] = "Chi Tiết Đơn Hàng - KLDShop";
+}
+
+<div class="container py-5">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-3 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-person-circle"></i> Tài Khoản
+                    </h5>
+                </div>
+                <div class="list-group list-group-flush">
+                    <a href="@Url.Action("Profile", "Account")" class="list-group-item list-group-item-action">
+                        <i class="bi bi-person"></i> Hồ Sơ Cá Nhân
+                    </a>
+                    <a href="@Url.Action("MyOrders", "Order")" class="list-group-item list-group-item-action active">
+                        <i class="bi bi-bag"></i> Đơn Hàng Của Tôi
+                    </a>
+                    <a href="@Url.Action("Profile", "Account")" class="list-group-item list-group-item-action">
+                        <i class="bi bi-key"></i> Đổi Mật Khẩu
+                    </a>
+                    <form method="post" action="@Url.Action("Logout", "Account")" style="display: inline;">
+                        <button type="submit" class="list-group-item list-group-item-action text-danger" style="border: none; background: none; width: 100%; text-align: left; padding: 0.75rem 1rem;">
+                            <i class="bi bi-box-arrow-right"></i> Đăng Xuất
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="col-md-9">
+            <!-- Order Header -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-bag-check"></i> Chi Tiết Đơn Hàng
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <p><strong>Mã Đơn Hàng:</strong><br><span class="text-primary fw-bold">@Model.OrderNumber</span><br><small class="text-muted">ID: #@Model.OrderId</small></p>
+                            <p><strong>Ngày Đặt:</strong><br>@Model.OrderDate.ToString("dd/MM/yyyy HH:mm")</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p>
+                                <strong>Trạng Thái Đơn Hàng:</strong><br>
+                                @{
+                                    string statusBadge = Model.Status switch
+                                    {
+                                        "Pending" => "warning",
+                                        "Confirmed" => "info",
+                                        "Processing" => "primary",
+                                        "Shipped" => "secondary",
+                                        "Delivered" => "success",
+                                        "Cancelled" => "danger",
+                                        _ => "secondary"
+                                    };
+                                    
+                                    string statusText = Model.Status switch
+                                    {
+                                        "Pending" => "Chờ Xử Lý",
+                                        "Confirmed" => "Đã Xác Nhận",
+                                        "Processing" => "Đang Xử Lý",
+                                        "Shipped" => "Đã Gửi",
+                                        "Delivered" => "Đã Giao",
+                                        "Cancelled" => "Đã Hủy",
+                                        _ => Model.Status
+                                    };
+                                }
+                                <span class="badge bg-@statusBadge fs-6">@statusText</span>
+                            </p>
+                            <p>
+                                <strong>Trạng Thái Thanh Toán:</strong><br>
+                                @{
+                                    string paymentBadge = Model.PaymentStatus switch
+                                    {
+                                        "Paid" => "success",
+                                        "Completed" => "success",
+                                        "Unpaid" => "warning",
+                                        "Pending" => "info",
+                                        "Refunded" => "secondary",
+                                        _ => "secondary"
+                                    };
+                                    
+                                    string paymentText = Model.PaymentStatus switch
+                                    {
+                                        "Paid" => "Đã Thanh Toán",
+                                        "Completed" => "Đã Thanh Toán",
+                                        "Unpaid" => "Chưa Thanh Toán",
+                                        "Pending" => "Chờ Xác Nhận",
+                                        "Refunded" => "Đã Hoàn Tiền",
+                                        _ => Model.PaymentStatus
+                                    };
+                                }
+                                <span class="badge bg-@paymentBadge fs-6">@paymentText</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Order Items -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-bag-fill"></i> Sản Phẩm Đặt Hàng
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Sản Phẩm</th>
+                                    <th class="text-end">Giá Gốc</th>
+                                    <th class="text-center">Số Lượng</th>
+                                    <th class="text-end">Thành Tiền</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.OrderDetails)
+                                {
+                                    <tr>
+                                        <td>
+                                            @item.Product?.ProductName ?? "N/A"
+                                        </td>
+                                        <td class="text-end">
+                                            @item.UnitPrice.ToString("#,##0")đ
+                                        </td>
+                                        <td class="text-center">
+                                            @item.Quantity
+                                        </td>
+                                        <td class="text-end fw-bold">
+                                            @item.TotalPrice.ToString("#,##0")đ
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Order Summary -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-calculator"></i> Tóm Tắt Chi Phí
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 offset-md-6">
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td><strong>Tổng Tiền Hàng:</strong></td>
+                                    <td class="text-end">@Model.TotalAmount.ToString("#,##0")đ</td>
+                                </tr>
+                                @if (Model.DiscountAmount > 0)
+                                {
+                                    <tr>
+                                        <td><strong>Chiết Khấu:</strong></td>
+                                        <td class="text-end text-danger">-@Model.DiscountAmount.ToString("#,##0")đ</td>
+                                    </tr>
+                                }
+                                @if (Model.TaxAmount > 0)
+                                {
+                                    <tr>
+                                        <td><strong>Thuế:</strong></td>
+                                        <td class="text-end">@Model.TaxAmount.ToString("#,##0")đ</td>
+                                    </tr>
+                                }
+                                @if (Model.ShippingCost > 0)
+                                {
+                                    <tr>
+                                        <td><strong>Phí Vận Chuyển:</strong></td>
+                                        <td class="text-end">@Model.ShippingCost.ToString("#,##0")đ</td>
+                                    </tr>
+                                }
+                                <tr class="border-top">
+                                    <td><strong>Tổng Cộng:</strong></td>
+                                    <td class="text-end"><strong class="text-primary fs-5">@Model.FinalAmount.ToString("#,##0")đ</strong></td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Shipping Information -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-truck"></i> Thông Tin Giao Hàng
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Người Nhận:</strong><br>@Model.ShippingRecipient</p>
+                            <p><strong>Số Điện Thoại:</strong><br>@Model.ShippingPhone</p>
+                            <p><strong>Địa Chỉ:</strong><br>@Model.ShippingAddress</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p>
+                                <strong>Tỉnh/Thành Phố:</strong><br>
+                                @Model.ShippingCity
+                            </p>
+                            <p>
+                                <strong>Quận/Huyện:</strong><br>
+                                @(string.IsNullOrEmpty(Model.ShippingDistrict) ? "N/A" : Model.ShippingDistrict)
+                            </p>
+                            <p>
+                                <strong>Phường/Xã:</strong><br>
+                                @(string.IsNullOrEmpty(Model.ShippingWard) ? "N/A" : Model.ShippingWard)
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payment Information -->
+            @if (Model.Payment != null)
+            {
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-credit-card"></i> Thông Tin Thanh Toán
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Phương Thức:</strong><br>@Model.Payment.PaymentMethod</p>
+                        <p><strong>Số Tiền:</strong><br>@Model.Payment.PaymentAmount.ToString("N0")đ</p>
+                        <p><strong>Trạng Thái:</strong><br><span class="badge bg-info">@Model.Payment.PaymentStatus</span></p>
+                        @if (!string.IsNullOrEmpty(Model.Payment.TransactionId))
+                        {
+                            <p><strong>Mã Giao Dịch:</strong><br>@Model.Payment.TransactionId</p>
+                        }
+                    </div>
+                </div>
+            }
+
+            <!-- Actions -->
+            <div class="d-flex gap-2">
+                <a href="@Url.Action("MyOrders", "Order")" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left"></i> Quay Lại Danh Sách
+                </a>
+                @if (Model.Status == "Pending" || Model.Status == "Confirmed")
+                {
+                    <button type="button" class="btn btn-danger" onclick="cancelOrder(@Model.OrderId)">
+                        <i class="bi bi-x-circle"></i> Hủy Đơn Hàng
+                    </button>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        border: none;
+        border-radius: 10px;
+    }
+
+    .list-group-item.active {
+        background-color: #0c63e4;
+        border-color: #0c63e4;
+    }
+</style>
+
+@section Scripts {
+    <script>
+        function cancelOrder(orderId) {
+            if (confirm('Bạn có chắc chắn muốn hủy đơn hàng này?')) {
+                fetch('@Url.Action("CancelOrder", "Order")', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ orderId: orderId })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(data.message);
+                        location.reload();
+                    } else {
+                        alert('Lỗi: ' + data.message);
+                    }
+                })
+                .catch(error => alert('Lỗi: ' + error));
+            }
+        }
+    </script>
+}

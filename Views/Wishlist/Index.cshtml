@@ -1,0 +1,271 @@
+@model List<Wishlist>
+
+@{
+    ViewData["Title"] = "Danh Sách Yêu Thích - KLDShop";
+    ViewData["MetaDescription"] = "Quản lý danh sách sản phẩm yêu thích của bạn tại KLDShop. Lưu trữ và theo dõi các sản phẩm ưa thích, nhận thông báo giảm giá. Dễ dàng thêm vào giỏ hàng và mua sắm sau.";
+}
+
+<div class="container my-5">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="bi bi-heart-fill text-danger"></i> Danh Sách Yêu Thích</h2>
+                @if (Model != null && Model.Count > 0)
+                {
+                    <button class="btn btn-outline-danger" onclick="clearWishlist()">
+                        <i class="bi bi-trash"></i> Xóa Tất Cả
+                    </button>
+                }
+            </div>
+
+            @if (Model == null || Model.Count == 0)
+            {
+                <!-- Empty Wishlist -->
+                <div class="card text-center py-5">
+                    <div class="card-body">
+                        <i class="bi bi-heart" style="font-size: 5rem; color: #ddd;"></i>
+                        <h4 class="mt-3">Danh Sách Yêu Thích Trống</h4>
+                        <p class="text-muted">Bạn chưa có sản phẩm yêu thích nào</p>
+                        <a href="@Url.Action("List", "Product")" class="btn btn-primary mt-3">
+                            <i class="bi bi-shop"></i> Khám Phá Sản Phẩm
+                        </a>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <!-- Wishlist Items Grid -->
+                <div class="row">
+                    @foreach (var item in Model)
+                    {
+                        var product = item.Product;
+                        var price = product?.DiscountPrice ?? product?.Price ?? 0;
+                        var originalPrice = product?.Price ?? 0;
+                        var hasDiscount = product?.DiscountPrice.HasValue == true;
+                        var discountPercent = hasDiscount ? (int)((1 - product.DiscountPrice!.Value / originalPrice) * 100) : 0;
+                        var inStock = product?.Quantity > 0;
+                        var productUrl = !string.IsNullOrEmpty(product?.Slug)
+                            ? Url.Action("DetailsBySlug", "Product", new { slug = product.Slug })
+                            : Url.Action("Details", "Product", new { id = product?.ProductId ?? 0 });
+
+                        <div class="col-md-6 col-lg-4 mb-4 wishlist-item" data-product-id="@product?.ProductId">
+                            <div class="card h-100 shadow-sm position-relative">
+                                <!-- Remove Button -->
+                                <button class="btn btn-sm btn-danger position-absolute top-0 end-0 m-2 z-index-10" 
+                                        onclick="removeFromWishlist(@product?.ProductId)"
+                                        style="z-index: 10;">
+                                    <i class="bi bi-x-lg"></i>
+                                </button>
+
+                                <!-- Product Image -->
+                                <div class="position-relative">
+                                    <a href="@productUrl">
+                                        <img src="@(string.IsNullOrEmpty(product?.Image) ? "https://via.placeholder.com/300x200?text=" + System.Net.WebUtility.UrlEncode(product?.ProductName ?? "Product") : product.Image)" 
+                                             class="card-img-top" 
+                                             alt="@product?.ProductName - Yêu thích"
+                                             loading="lazy"
+                                             decoding="async"
+                                             width="300"
+                                             height="200"
+                                             style="object-fit: cover; height: 200px;">
+                                    </a>
+                                    @if (hasDiscount)
+                                    {
+                                        <span class="badge bg-danger position-absolute top-0 start-0 m-2">-@discountPercent%</span>
+                                    }
+                                    @if (!inStock)
+                                    {
+                                        <span class="badge bg-secondary position-absolute bottom-0 start-0 m-2">Hết hàng</span>
+                                    }
+                                </div>
+
+                                <!-- Product Info -->
+                                <div class="card-body">
+                                    <h5 class="card-title">
+                                        <a href="@productUrl" class="text-decoration-none text-dark">
+                                            @product?.ProductName
+                                        </a>
+                                    </h5>
+                                    <p class="card-text text-muted small">
+                                        @(product?.Category?.CategoryName ?? "Chưa phân loại")
+                                    </p>
+                                    
+                                    <!-- Price -->
+                                    <div class="mb-3">
+                                        @if (hasDiscount)
+                                        {
+                                            <h5 class="text-danger fw-bold mb-0">@price.ToString("N0")đ</h5>
+                                            <small class="text-muted"><s>@originalPrice.ToString("N0")đ</s></small>
+                                        }
+                                        else
+                                        {
+                                            <h5 class="text-danger fw-bold mb-0">@price.ToString("N0")đ</h5>
+                                        }
+                                    </div>
+
+                                    <!-- Added Date -->
+                                    <small class="text-muted">
+                                        <i class="bi bi-clock"></i> Thêm vào: @item.AddedDate.ToString("dd/MM/yyyy")
+                                    </small>
+                                </div>
+
+                                <!-- Card Footer -->
+                                <div class="card-footer bg-white border-top">
+                                    <div class="d-grid gap-2">
+                                        @if (inStock)
+                                        {
+                                            <button class="btn btn-primary btn-sm" onclick="addToCartFromWishlist(@product?.ProductId)">
+                                                <i class="bi bi-cart-plus"></i> Thêm Vào Giỏ
+                                            </button>
+                                        }
+                                        else
+                                        {
+                                            <button class="btn btn-secondary btn-sm" disabled>
+                                                <i class="bi bi-x-circle"></i> Hết Hàng
+                                            </button>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function removeFromWishlist(productId) {
+            if (!confirm('Bạn có chắc muốn xóa sản phẩm này khỏi danh sách yêu thích?')) {
+                return;
+            }
+
+            $.post('@Url.Action("Remove", "Wishlist")', { productId: productId }, function(data) {
+                if (data.success) {
+                    // Remove item from DOM
+                    $(`.wishlist-item[data-product-id="${productId}"]`).fadeOut(300, function() {
+                        $(this).remove();
+                        
+                        // Check if wishlist is empty
+                        if ($('.wishlist-item').length === 0) {
+                            location.reload();
+                        }
+                    });
+
+                    // Update wishlist badge
+                    updateWishlistBadge();
+                    
+                    KLDShop.showNotification('success', data.message);
+                } else {
+                    KLDShop.showNotification('danger', data.message);
+                }
+            });
+        }
+
+        function addToCartFromWishlist(productId) {
+            $.post('@Url.Action("AddToCart", "Wishlist")', { productId: productId }, function(data) {
+                if (data.success) {
+                    KLDShop.showNotification('success', data.message);
+                    updateCartBadge();
+                } else {
+                    KLDShop.showNotification('danger', data.message);
+                }
+            });
+        }
+
+        function clearWishlist() {
+            if (!confirm('Bạn có chắc muốn xóa toàn bộ danh sách yêu thích?')) {
+                return;
+            }
+
+            $.post('@Url.Action("Clear", "Wishlist")', function(data) {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    KLDShop.showNotification('danger', data.message);
+                }
+            });
+        }
+
+        function updateWishlistBadge() {
+            $.get('@Url.Action("GetCount", "Wishlist")', function(data) {
+                $('#wishlist-count').text(data.count);
+                if (data.count === 0) {
+                    $('#wishlist-count').hide();
+                }
+            });
+        }
+
+        function updateCartBadge() {
+            $.get('@Url.Action("GetCartSummary", "Cart")', function(data) {
+                $('#cart-count').text(data.itemCount);
+            });
+        }
+    </script>
+}
+
+<!-- Wishlist Guide Section -->
+<div class="row mt-5">
+    <div class="col-12">
+        <div class="card bg-light">
+            <div class="card-body">
+                <h3 class="text-center mb-4"><i class="bi bi-heart"></i> Hướng Dẫn Sử Dụng Danh Sách Yêu Thích</h3>
+                <div class="row">
+                    <div class="col-md-6 mb-4">
+                        <h5 class="text-primary"><i class="bi bi-question-circle"></i> Danh Sách Yêu Thích Là Gì?</h5>
+                        <p>
+                            <strong>Danh sách yêu thích</strong> (Wishlist) là một tính năng tiện lợi giúp bạn lưu trữ các sản phẩm 
+                            mà bạn quan tâm để dễ dàng tìm kiếm và mua sắm sau này. Đây là công cụ tuyệt vời để:
+                        </p>
+                        <ul>
+                            <li><strong>Lưu sản phẩm ưa thích:</strong> Không phải tìm kiếm lại mỗi khi muốn xem sản phẩm.</li>
+                            <li><strong>So sánh giá cả:</strong> Theo dõi biến động giá của sản phẩm theo thời gian.</li>
+                            <li><strong>Nhận thông báo giảm giá:</strong> Chúng tôi sẽ thông báo khi sản phẩm trong danh sách yêu thích có chương trình khuyến mãi.</li>
+                            <li><strong>Chia sẻ với người khác:</strong> Tạo danh sách quà tặng và chia sẻ với bạn bè, gia đình.</li>
+                            <li><strong>Lên kế hoạch mua sắm:</strong> Chuẩn bị danh sách mua sắm cho các dịp đặc biệt.</li>
+                        </ul>
+                        
+                        <h5 class="text-success mt-4"><i class="bi bi-plus-circle"></i> Cách Thêm Sản Phẩm Vào Danh Sách</h5>
+                        <ol>
+                            <li>Tìm sản phẩm bạn yêu thích trên trang web KLDShop.</li>
+                            <li>Nhấn vào biểu tượng trái tim <i class="bi bi-heart text-danger"></i> trên ảnh sản phẩm hoặc trang chi tiết sản phẩm.</li>
+                            <li>Sản phẩm sẽ được tự động thêm vào danh sách yêu thích của bạn.</li>
+                            <li>Truy cập danh sách yêu thích bất cứ lúc nào qua biểu tượng trái tim trên thanh menu.</li>
+                        </ol>
+                    </div>
+                    <div class="col-md-6 mb-4">
+                        <h5 class="text-info"><i class="bi bi-lightning"></i> Mẹo Sử Dụng Hiệu Quả</h5>
+                        <ul>
+                            <li><strong>Đăng nhập tài khoản:</strong> Danh sách yêu thích sẽ được đồng bộ trên mọi thiết bị khi bạn đăng nhập.</li>
+                            <li><strong>Xem thường xuyên:</strong> Kiểm tra danh sách để cập nhật giá cả và tình trạng hàng.</li>
+                            <li><strong>Thêm vào giỏ hàng nhanh:</strong> Chỉ cần một cú nhấp chuột để chuyển sản phẩm từ danh sách yêu thích vào giỏ hàng.</li>
+                            <li><strong>Xóa sản phẩm đã mua:</strong> Giữ danh sách gọn gàng bằng cách xóa các sản phẩm đã mua hoặc không còn quan tâm.</li>
+                            <li><strong>Theo dõi khuyến mãi:</strong> Bật thông báo để nhận tin về các chương trình giảm giá cho sản phẩm yêu thích.</li>
+                        </ul>
+                        
+                        <h5 class="text-warning mt-4"><i class="bi bi-gift"></i> Lợi Ích Dành Cho Thành Viên</h5>
+                        <p>
+                            Khi bạn là thành viên đã đăng ký tài khoản tại KLDShop, bạn sẽ nhận được nhiều ưu đãi đặc biệt:
+                        </p>
+                        <ul class="mb-0">
+                            <li><strong>Thông báo giảm giá:</strong> Email tự động khi sản phẩm yêu thích giảm giá.</li>
+                            <li><strong>Ưu đãi độc quyền:</strong> Mã giảm giá riêng cho các sản phẩm trong danh sách yêu thích.</li>
+                            <li><strong>Điểm thưởng tích lũy:</strong> Nhận điểm khi mua sản phẩm từ danh sách yêu thích.</li>
+                            <li><strong>Gợi ý sản phẩm:</strong> Hệ thống gợi ý các sản phẩm tương tự dựa trên sở thích của bạn.</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="text-center mt-4">
+                    <p class="mb-2"><strong>Cần hỗ trợ?</strong></p>
+                    <p class="text-muted mb-0">
+                        Nếu bạn gặp khó khăn trong việc sử dụng danh sách yêu thích hoặc có bất kỳ câu hỏi nào, 
+                        đội ngũ chăm sóc khách hàng KLDShop luôn sẵn sàng hỗ trợ bạn qua Hotline <strong>1900-xxxx</strong> 
+                        hoặc email <strong>support@kldshop.com</strong>. Chúng tôi cam kết phản hồi trong vòng 24 giờ.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

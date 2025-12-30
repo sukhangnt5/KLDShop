@@ -1,0 +1,385 @@
+@model Product
+
+@{
+    ViewData["Title"] = "Chỉnh Sửa Sản Phẩm - Admin";
+}
+
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="h3 d-inline-block">
+                <i class="bi bi-pencil-square"></i> Chỉnh Sửa Sản Phẩm
+            </h1>
+            <a href="@Url.Action("Products", "Admin")" class="btn btn-outline-secondary float-end">
+                <i class="bi bi-arrow-left"></i> Quay Lại
+            </a>
+        </div>
+    </div>
+
+    <!-- Success/Error Messages -->
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle"></i> @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-circle"></i> @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- Form -->
+    <form asp-action="EditProduct" asp-route-id="@Model.ProductId" method="post" class="needs-validation" novalidate>
+        <input type="hidden" asp-for="ProductId" />
+        
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0">Thông Tin Sản Phẩm #@Model.ProductId</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <!-- Basic Information -->
+                    <div class="col-md-8">
+                        <h6 class="text-primary mb-3">Thông Tin Cơ Bản</h6>
+                        
+                        <div class="mb-3">
+                            <label asp-for="ProductName" class="form-label">Tên Sản Phẩm <span class="text-danger">*</span></label>
+                            <input asp-for="ProductName" class="form-control" placeholder="Nhập tên sản phẩm" required />
+                            <span asp-validation-for="ProductName" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Description" class="form-label">Mô Tả</label>
+                            <textarea asp-for="Description" class="form-control" rows="5" placeholder="Nhập mô tả chi tiết sản phẩm"></textarea>
+                            <span asp-validation-for="Description" class="text-danger"></span>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="price-display" class="form-label">Giá <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <input type="text" id="price-display" class="form-control price-input" placeholder="1,000,000" required value="@Model.Price" />
+                                    <span class="input-group-text">đ</span>
+                                </div>
+                                <input asp-for="Price" type="hidden" id="price-hidden" />
+                                <span asp-validation-for="Price" class="text-danger"></span>
+                                <small class="form-text text-muted">Nhập số, tự động format với dấu phẩy</small>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label for="discount-display" class="form-label">Giá Khuyến Mãi</label>
+                                <div class="input-group">
+                                    <input type="text" id="discount-display" class="form-control price-input" placeholder="900,000" value="@Model.DiscountPrice" />
+                                    <span class="input-group-text">đ</span>
+                                </div>
+                                <input asp-for="DiscountPrice" type="hidden" id="discount-hidden" />
+                                <span asp-validation-for="DiscountPrice" class="text-danger"></span>
+                                <small class="form-text text-muted">Để trống nếu không có khuyến mãi</small>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Quantity" class="form-label">Số Lượng <span class="text-danger">*</span></label>
+                                <input asp-for="Quantity" type="number" class="form-control" placeholder="0" required />
+                                <span asp-validation-for="Quantity" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="CategoryId" class="form-label">Danh Mục</label>
+                                <select asp-for="CategoryId" class="form-select">
+                                    <option value="">-- Chọn Danh Mục --</option>
+                                    @foreach (var category in ViewBag.Categories as List<Category>)
+                                    {
+                                        <option value="@category.CategoryId" selected="@(category.CategoryId == Model.CategoryId)">@category.CategoryName</option>
+                                    }
+                                </select>
+                                <span asp-validation-for="CategoryId" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Image" class="form-label">URL Hình Ảnh Chính</label>
+                            <input asp-for="Image" class="form-control" placeholder="https://example.com/image.jpg" />
+                            <span asp-validation-for="Image" class="text-danger"></span>
+                            @if (!string.IsNullOrEmpty(Model.Image))
+                            {
+                                <div class="mt-2">
+                                    <img src="@Model.Image" alt="Preview" class="img-thumbnail" style="max-width: 200px;" />
+                                </div>
+                            }
+                            <small class="form-text text-muted">Ảnh chính hiển thị đầu tiên</small>
+                        </div>
+
+                        <hr class="my-3" />
+                        <h6 class="text-primary mb-3">Ảnh Phụ (Tối đa 4 ảnh)</h6>
+                        
+                        @{
+                            var existingImages = Model.ProductImages?.OrderBy(i => i.DisplayOrder).ToList() ?? new List<ProductImage>();
+                        }
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="image1" class="form-label">Ảnh phụ 1</label>
+                                <input type="text" id="image1" name="ProductImages[0].ImageUrl" class="form-control" 
+                                       value="@(existingImages.ElementAtOrDefault(0)?.ImageUrl)" placeholder="https://example.com/image1.jpg" />
+                                <input type="hidden" name="ProductImages[0].ProductImageId" value="@(existingImages.ElementAtOrDefault(0)?.ProductImageId ?? 0)" />
+                                <input type="hidden" name="ProductImages[0].DisplayOrder" value="1" />
+                                @if (!string.IsNullOrEmpty(existingImages.ElementAtOrDefault(0)?.ImageUrl))
+                                {
+                                    <img src="@existingImages[0].ImageUrl" class="img-thumbnail mt-2" style="max-width: 100px;" />
+                                }
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="image2" class="form-label">Ảnh phụ 2</label>
+                                <input type="text" id="image2" name="ProductImages[1].ImageUrl" class="form-control" 
+                                       value="@(existingImages.ElementAtOrDefault(1)?.ImageUrl)" placeholder="https://example.com/image2.jpg" />
+                                <input type="hidden" name="ProductImages[1].ProductImageId" value="@(existingImages.ElementAtOrDefault(1)?.ProductImageId ?? 0)" />
+                                <input type="hidden" name="ProductImages[1].DisplayOrder" value="2" />
+                                @if (!string.IsNullOrEmpty(existingImages.ElementAtOrDefault(1)?.ImageUrl))
+                                {
+                                    <img src="@existingImages[1].ImageUrl" class="img-thumbnail mt-2" style="max-width: 100px;" />
+                                }
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="image3" class="form-label">Ảnh phụ 3</label>
+                                <input type="text" id="image3" name="ProductImages[2].ImageUrl" class="form-control" 
+                                       value="@(existingImages.ElementAtOrDefault(2)?.ImageUrl)" placeholder="https://example.com/image3.jpg" />
+                                <input type="hidden" name="ProductImages[2].ProductImageId" value="@(existingImages.ElementAtOrDefault(2)?.ProductImageId ?? 0)" />
+                                <input type="hidden" name="ProductImages[2].DisplayOrder" value="3" />
+                                @if (!string.IsNullOrEmpty(existingImages.ElementAtOrDefault(2)?.ImageUrl))
+                                {
+                                    <img src="@existingImages[2].ImageUrl" class="img-thumbnail mt-2" style="max-width: 100px;" />
+                                }
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="image4" class="form-label">Ảnh phụ 4</label>
+                                <input type="text" id="image4" name="ProductImages[3].ImageUrl" class="form-control" 
+                                       value="@(existingImages.ElementAtOrDefault(3)?.ImageUrl)" placeholder="https://example.com/image4.jpg" />
+                                <input type="hidden" name="ProductImages[3].ProductImageId" value="@(existingImages.ElementAtOrDefault(3)?.ProductImageId ?? 0)" />
+                                <input type="hidden" name="ProductImages[3].DisplayOrder" value="4" />
+                                @if (!string.IsNullOrEmpty(existingImages.ElementAtOrDefault(3)?.ImageUrl))
+                                {
+                                    <img src="@existingImages[3].ImageUrl" class="img-thumbnail mt-2" style="max-width: 100px;" />
+                                }
+                            </div>
+                        </div>
+                        
+                        <small class="form-text text-muted d-block mb-3">
+                            <i class="bi bi-info-circle"></i> Để trống nếu muốn xóa ảnh. Ảnh sẽ hiển thị ở trang chi tiết sản phẩm.
+                        </small>
+
+                        <hr class="my-4" />
+                        <h6 class="text-primary mb-3">Thông Tin Bổ Sung</h6>
+
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label asp-for="SKU" class="form-label">Mã SKU</label>
+                                <input asp-for="SKU" class="form-control" placeholder="SKU-001" />
+                                <span asp-validation-for="SKU" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+                                <label asp-for="Weight" class="form-label">Trọng Lượng (kg)</label>
+                                <input asp-for="Weight" type="number" step="0.01" class="form-control" placeholder="0.00" />
+                                <span asp-validation-for="Weight" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+                                <label asp-for="Dimensions" class="form-label">Kích Thước</label>
+                                <input asp-for="Dimensions" class="form-control" placeholder="10x20x30 cm" />
+                                <span asp-validation-for="Dimensions" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Manufacturer" class="form-label">Nhà Sản Xuất</label>
+                                <input asp-for="Manufacturer" class="form-control" placeholder="Tên nhà sản xuất" />
+                                <span asp-validation-for="Manufacturer" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="WarrantyPeriod" class="form-label">Bảo Hành (tháng)</label>
+                                <input asp-for="WarrantyPeriod" type="number" class="form-control" placeholder="12" />
+                                <span asp-validation-for="WarrantyPeriod" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SEO & Status -->
+                    <div class="col-md-4">
+                        <h6 class="text-primary mb-3">SEO & Trạng Thái</h6>
+                        
+                        <div class="mb-3">
+                            <label asp-for="MetaDescription" class="form-label">Meta Description</label>
+                            <textarea asp-for="MetaDescription" class="form-control" rows="3" placeholder="Mô tả ngắn cho SEO (160 ký tự)"></textarea>
+                            <span asp-validation-for="MetaDescription" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="MetaKeywords" class="form-label">Meta Keywords</label>
+                            <input asp-for="MetaKeywords" class="form-control" placeholder="keyword1, keyword2, keyword3" />
+                            <span asp-validation-for="MetaKeywords" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="form-check form-switch">
+                                <input asp-for="IsActive" class="form-check-input" type="checkbox" />
+                                <label asp-for="IsActive" class="form-check-label">Kích Hoạt Sản Phẩm</label>
+                            </div>
+                        </div>
+
+                        <div class="card bg-light mt-4">
+                            <div class="card-body">
+                                <h6 class="card-title">📊 Thống Kê</h6>
+                                <ul class="small mb-0">
+                                    <li><strong>Lượt xem:</strong> @Model.Views</li>
+                                    <li><strong>Ngày tạo:</strong> @Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")</li>
+                                    <li><strong>Cập nhật:</strong> @Model.UpdatedAt.ToString("dd/MM/yyyy HH:mm")</li>
+                                    @if (!string.IsNullOrEmpty(Model.Slug))
+                                    {
+                                        <li><strong>Slug:</strong> @Model.Slug</li>
+                                    }
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer bg-light">
+                <div class="d-flex justify-content-between">
+                    <a href="@Url.Action("Products", "Admin")" class="btn btn-secondary">
+                        <i class="bi bi-x-circle"></i> Hủy
+                    </a>
+                    <button type="submit" class="btn btn-warning text-dark">
+                        <i class="bi bi-save"></i> Cập Nhật
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        // Format number with commas
+        function formatNumber(input) {
+            // Remove all commas and non-digit characters
+            let value = input.value.replace(/[^0-9]/g, '');
+            
+            // If empty, leave it empty
+            if (value === '') {
+                input.value = '';
+                return;
+            }
+            
+            // Convert to number and format with commas
+            let numValue = parseInt(value);
+            if (!isNaN(numValue)) {
+                input.value = numValue.toLocaleString('en-US');
+            }
+        }
+
+        // Update hidden input with clean value
+        function updateHiddenInput(displayInput, hiddenInput) {
+            let value = displayInput.value.replace(/[^0-9]/g, '');
+            hiddenInput.value = value;
+        }
+
+        // Format as user types
+        function formatOnInput(input) {
+            let cursorPosition = input.selectionStart;
+            let oldValue = input.value;
+            let oldLength = oldValue.length;
+            
+            // Remove all commas and non-digit characters
+            let value = input.value.replace(/[^0-9]/g, '');
+            
+            if (value === '') {
+                input.value = '';
+                // Update corresponding hidden input
+                if (input.id === 'price-display') {
+                    document.getElementById('price-hidden').value = '';
+                } else if (input.id === 'discount-display') {
+                    document.getElementById('discount-hidden').value = '';
+                }
+                return;
+            }
+            
+            // Format with commas
+            let numValue = parseInt(value);
+            if (!isNaN(numValue)) {
+                input.value = numValue.toLocaleString('en-US');
+                
+                // Update corresponding hidden input with clean value
+                if (input.id === 'price-display') {
+                    document.getElementById('price-hidden').value = numValue;
+                } else if (input.id === 'discount-display') {
+                    document.getElementById('discount-hidden').value = numValue;
+                }
+                
+                // Adjust cursor position
+                let newLength = input.value.length;
+                let diff = newLength - oldLength;
+                input.selectionStart = input.selectionEnd = cursorPosition + diff;
+            }
+        }
+
+        // Form submission - just make sure hidden fields are updated
+        document.querySelector('form').addEventListener('submit', function(e) {
+            // Sync display to hidden one more time before submit
+            let priceDisplay = document.getElementById('price-display');
+            let priceHidden = document.getElementById('price-hidden');
+            let discountDisplay = document.getElementById('discount-display');
+            let discountHidden = document.getElementById('discount-hidden');
+            
+            if (priceDisplay && priceDisplay.value) {
+                priceHidden.value = priceDisplay.value.replace(/[^0-9]/g, '');
+            }
+            
+            if (discountDisplay && discountDisplay.value) {
+                discountHidden.value = discountDisplay.value.replace(/[^0-9]/g, '');
+            }
+        });
+
+        // Add event listeners to price inputs
+        document.addEventListener('DOMContentLoaded', function() {
+            // Format existing values on page load
+            document.querySelectorAll('.price-input').forEach(function(input) {
+                if (input.value && input.value !== '') {
+                    formatNumber(input);
+                }
+                
+                // Format on blur
+                input.addEventListener('blur', function() {
+                    formatNumber(this);
+                });
+                
+                // Format on input (real-time)
+                input.addEventListener('input', function() {
+                    formatOnInput(this);
+                });
+            });
+        });
+    </script>
+}
+
+<style>
+    .card {
+        border-radius: 10px;
+    }
+    .form-label {
+        font-weight: 500;
+    }
+</style>

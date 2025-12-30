@@ -1,0 +1,263 @@
+@model KLDShop.Models.EmailCampaign
+@{
+    ViewData["Title"] = "Tạo Email Campaign";
+}
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col">
+            <h2><i class="bi bi-mailbox"></i> Tạo Email Campaign</h2>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a asp-action="Dashboard">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Newsletter">Newsletter</a></li>
+                    <li class="breadcrumb-item active">Tạo Campaign</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="bi bi-pencil-square"></i> Thông Tin Campaign</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" asp-action="CreateCampaign" id="campaign-form">
+                        @Html.AntiForgeryToken()
+                        
+                        <div class="mb-3">
+                            <label for="Subject" class="form-label">Tiêu Đề Email <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="Subject" name="Subject" required maxlength="255">
+                            <div class="form-text">Tiêu đề sẽ hiển thị trong hộp thư của người nhận</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="PreviewText" class="form-label">Văn Bản Xem Trước</label>
+                            <input type="text" class="form-control" id="PreviewText" name="PreviewText" maxlength="500">
+                            <div class="form-text">Văn bản mô tả ngắn hiển thị bên cạnh tiêu đề email</div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="FromName" class="form-label">Tên Người Gửi <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="FromName" name="FromName" value="KLDShop" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="FromEmail" class="form-label">Email Người Gửi <span class="text-danger">*</span></label>
+                                <input type="email" class="form-control" id="FromEmail" name="FromEmail" value="info@kldshop.com" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="ReplyTo" class="form-label">Email Phản Hồi</label>
+                            <input type="email" class="form-control" id="ReplyTo" name="ReplyTo" value="support@kldshop.com">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="HtmlContent" class="form-label">Nội Dung Email (HTML) <span class="text-danger">*</span></label>
+                            <div class="btn-toolbar mb-2" role="toolbar">
+                                <div class="btn-group me-2" role="group">
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="insertTemplate('welcome')">
+                                        <i class="bi bi-file-text"></i> Mẫu Chào Mừng
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="insertTemplate('promotion')">
+                                        <i class="bi bi-tag"></i> Mẫu Khuyến Mãi
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="insertTemplate('newsletter')">
+                                        <i class="bi bi-newspaper"></i> Mẫu Tin Tức
+                                    </button>
+                                </div>
+                                <button type="button" class="btn btn-sm btn-outline-primary" onclick="togglePreview()">
+                                    <i class="bi bi-eye"></i> Xem Trước
+                                </button>
+                            </div>
+                            <textarea class="form-control font-monospace" id="HtmlContent" name="HtmlContent" rows="15" required></textarea>
+                            <div class="form-text">Sử dụng HTML để tạo nội dung email</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="ScheduledAt" class="form-label">Lên Lịch Gửi (Tùy Chọn)</label>
+                            <input type="datetime-local" class="form-control" id="ScheduledAt" name="ScheduledAt">
+                            <div class="form-text">Để trống để lưu nháp, hoặc chọn thời gian để lên lịch gửi</div>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex">
+                            <button type="submit" name="action" value="draft" class="btn btn-secondary">
+                                <i class="bi bi-save"></i> Lưu Nháp
+                            </button>
+                            <button type="submit" name="action" value="schedule" class="btn btn-warning">
+                                <i class="bi bi-clock"></i> Lên Lịch Gửi
+                            </button>
+                            <button type="submit" name="action" value="send" class="btn btn-primary">
+                                <i class="bi bi-send"></i> Gửi Ngay
+                            </button>
+                            <a asp-action="Newsletter" class="btn btn-outline-secondary">
+                                <i class="bi bi-x"></i> Hủy
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="bi bi-eye"></i> Xem Trước Email</h5>
+                </div>
+                <div class="card-body">
+                    <div id="email-preview" class="border p-3 bg-light" style="min-height: 400px;">
+                        <p class="text-muted text-center">Nhập nội dung HTML và nhấn "Xem Trước" để xem kết quả</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5><i class="bi bi-info-circle"></i> Hướng Dẫn</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="small">
+                        <li>Sử dụng các mẫu có sẵn để bắt đầu nhanh</li>
+                        <li>Nội dung email hỗ trợ HTML đầy đủ</li>
+                        <li>Kiểm tra xem trước trước khi gửi</li>
+                        <li>Có thể lưu nháp để chỉnh sửa sau</li>
+                        <li>Lên lịch gửi vào thời gian phù hợp</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function insertTemplate(type) {
+            let template = '';
+            
+            if (type === 'welcome') {
+                template = `<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: #1b6ec2; color: white; padding: 20px; text-align: center; }
+        .content { padding: 20px; background: #f9f9f9; }
+        .button { display: inline-block; padding: 10px 20px; background: #1b6ec2; color: white; text-decoration: none; border-radius: 5px; }
+        .footer { text-align: center; padding: 20px; font-size: 12px; color: #666; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Chào Mừng Đến Với KLDShop!</h1>
+        </div>
+        <div class="content">
+            <h2>Xin chào!</h2>
+            <p>Cảm ơn bạn đã đăng ký nhận tin từ KLDShop. Chúng tôi rất vui được có bạn trong cộng đồng của mình!</p>
+            <p>Bạn sẽ nhận được các thông tin về:</p>
+            <ul>
+                <li>Sản phẩm mới nhất</li>
+                <li>Ưu đãi đặc biệt</li>
+                <li>Tin tức và sự kiện</li>
+            </ul>
+            <p style="text-align: center;">
+                <a href="https://kldshop.com" class="button">Khám Phá Ngay</a>
+            </p>
+        </div>
+        <div class="footer">
+            <p>&copy; 2025 KLDShop. All rights reserved.</p>
+            <p><a href="#">Hủy đăng ký</a></p>
+        </div>
+    </div>
+</body>
+</html>`;
+            } else if (type === 'promotion') {
+                template = `<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
+        .container { max-width: 600px; margin: 0 auto; }
+        .banner { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 40px; text-align: center; }
+        .promo-code { background: #ffd93d; color: #333; font-size: 24px; font-weight: bold; padding: 15px; margin: 20px 0; border-radius: 5px; }
+        .content { padding: 30px; }
+        .cta { display: inline-block; padding: 15px 30px; background: #ff6b6b; color: white; text-decoration: none; border-radius: 25px; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="banner">
+            <h1>🎉 KHUYẾN MÃI ĐẶC BIỆT 🎉</h1>
+            <h2>GIẢM GIÁ 50% CHO TẤT CẢ SẢN PHẨM</h2>
+        </div>
+        <div class="content">
+            <p>Đừng bỏ lỡ cơ hội tuyệt vời này!</p>
+            <div class="promo-code">MÃ: SALE50</div>
+            <p>Áp dụng mã giảm giá khi thanh toán để nhận ưu đãi.</p>
+            <p style="text-align: center;">
+                <a href="https://kldshop.com/products" class="cta">MUA NGAY</a>
+            </p>
+            <p style="font-size: 12px; color: #666;">* Chương trình có hiệu lực đến hết ngày 31/12/2025</p>
+        </div>
+    </div>
+</body>
+</html>`;
+            } else if (type === 'newsletter') {
+                template = `<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; }
+        .container { max-width: 600px; margin: 0 auto; background: white; }
+        .header { background: #2c3e50; color: white; padding: 20px; }
+        .article { padding: 20px; border-bottom: 1px solid #eee; }
+        .article h3 { color: #2c3e50; margin-top: 0; }
+        .read-more { color: #3498db; text-decoration: none; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📰 KLDShop Newsletter</h1>
+            <p>Tin tức & Cập nhật mới nhất</p>
+        </div>
+        <div class="article">
+            <h3>Sản Phẩm Mới Nhất Tháng 12</h3>
+            <p>Khám phá bộ sưu tập sản phẩm mới nhất của chúng tôi với nhiều mẫu mã hấp dẫn...</p>
+            <a href="#" class="read-more">Đọc thêm →</a>
+        </div>
+        <div class="article">
+            <h3>Tips & Tricks</h3>
+            <p>Hướng dẫn sử dụng sản phẩm hiệu quả và tiết kiệm...</p>
+            <a href="#" class="read-more">Đọc thêm →</a>
+        </div>
+        <div style="padding: 20px; text-align: center; background: #ecf0f1;">
+            <p>Cảm ơn bạn đã đăng ký nhận tin!</p>
+            <p style="font-size: 12px;"><a href="#">Hủy đăng ký</a> | <a href="#">Cập nhật tùy chọn</a></p>
+        </div>
+    </div>
+</body>
+</html>`;
+            }
+            
+            document.getElementById('HtmlContent').value = template;
+        }
+
+        function togglePreview() {
+            const content = document.getElementById('HtmlContent').value;
+            const preview = document.getElementById('email-preview');
+            preview.innerHTML = content || '<p class="text-muted text-center">Nhập nội dung HTML để xem trước</p>';
+        }
+
+        // Auto-preview on content change (debounced)
+        let previewTimeout;
+        document.getElementById('HtmlContent').addEventListener('input', function() {
+            clearTimeout(previewTimeout);
+            previewTimeout = setTimeout(togglePreview, 1000);
+        });
+    </script>
+}

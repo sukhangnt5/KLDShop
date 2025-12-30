@@ -1,0 +1,74 @@
+@model List<(string Title, string Url)>
+
+@if (Model != null && Model.Any())
+{
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+            @for (int i = 0; i < Model.Count; i++)
+            {
+                var item = Model[i];
+                var isLast = i == Model.Count - 1;
+                
+                <li class="breadcrumb-item @(isLast ? "active" : "")" @(isLast ? "aria-current='page'" : "")>
+                    @if (isLast)
+                    {
+                        @item.Title
+                    }
+                    else
+                    {
+                        <a href="@item.Url">@item.Title</a>
+                    }
+                </li>
+            }
+        </ol>
+    </nav>
+
+    @* Structured Data for Breadcrumb *@
+    <script type="application/ld+json">
+    {
+        "@@context": "https://schema.org/",
+        "@@type": "BreadcrumbList",
+        "itemListElement": [
+            @for (int i = 0; i < Model.Count; i++)
+            {
+                var item = Model[i];
+                @:@(i > 0 ? "," : "")
+                @:{
+                @:  "@@type": "ListItem",
+                @:  "position": @(i + 1),
+                @:  "name": "@Html.Raw(item.Title.Replace("\"", "\\\""))",
+                @:  "item": "@Html.Raw(item.Url.Replace("\"", "\\\""))"
+                @:}
+            }
+        ]
+    }
+    </script>
+}
+
+<style>
+    .breadcrumb {
+        background-color: #f8f9fa;
+        padding: 0.75rem 1rem;
+        border-radius: 0.25rem;
+    }
+    
+    .breadcrumb-item + .breadcrumb-item::before {
+        content: "›";
+        color: #6c757d;
+        padding: 0 0.5rem;
+    }
+    
+    .breadcrumb-item a {
+        color: #0d6efd;
+        text-decoration: none;
+    }
+    
+    .breadcrumb-item a:hover {
+        color: #0a58ca;
+        text-decoration: underline;
+    }
+    
+    .breadcrumb-item.active {
+        color: #6c757d;
+    }
+</style>

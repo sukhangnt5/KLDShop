@@ -1,0 +1,592 @@
+@model List<Product>
+
+@{
+    ViewData["Title"] = "Danh Sách Sản Phẩm - KLDShop";
+    ViewData["MetaDescription"] = "Khám phá bộ sưu tập sản phẩm chất lượng cao tại KLDShop. Hàng ngàn sản phẩm đa dạng từ điện tử, thời trang đến đồ gia dụng với giá tốt nhất. Miễn phí vận chuyển, đổi trả trong 30 ngày. Mua sắm an toàn, tiện lợi.";
+    var totalPages = ViewBag.TotalPages ?? 1;
+    var currentPage = ViewBag.CurrentPage ?? 1;
+    var searchTerm = ViewBag.SearchTerm ?? "";
+    
+    // Breadcrumb data
+    var breadcrumbs = new List<(string Title, string Url)>
+    {
+        ("Trang Chủ", Url.Action("Index", "Home") ?? "/"),
+        ("Sản Phẩm", "")
+    };
+}
+
+@await Html.PartialAsync("_Breadcrumb", breadcrumbs)
+
+<div class="row">
+    <!-- Sidebar - Filters -->
+    <div class="col-md-3 mb-4">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="bi bi-funnel"></i> Bộ Lọc</h5>
+            </div>
+            <div class="card-body">
+                <!-- Search -->
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Tìm Kiếm</label>
+                    <input type="text" id="search-input" class="form-control" placeholder="Nhập từ khóa..." value="@searchTerm">
+                </div>
+
+                <!-- Category Filter -->
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Danh Mục</label>
+                    <select id="category-filter" class="form-select">
+                        <option value="0">Tất Cả Danh Mục</option>
+                        @if (ViewBag.Categories != null)
+                        {
+                            @foreach (var cat in ViewBag.Categories)
+                            {
+                                @if (ViewBag.SelectedCategoryId == cat.CategoryId)
+                                {
+                                    <option value="@cat.CategoryId" selected>@cat.CategoryName</option>
+                                }
+                                else
+                                {
+                                    <option value="@cat.CategoryId">@cat.CategoryName</option>
+                                }
+                            }
+                        }
+                    </select>
+                </div>
+
+                <!-- Price Range Filter -->
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Khoảng Giá</label>
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <input type="number" id="min-price" class="form-control form-control-sm" placeholder="Tối thiểu">
+                        </div>
+                        <div class="col-6">
+                            <input type="number" id="max-price" class="form-control form-control-sm" placeholder="Tối đa">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sort Options -->
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Sắp Xếp</label>
+                    <select id="sort-by" class="form-select">
+                        <option value="latest">Mới Nhất</option>
+                        <option value="popular">Phổ Biến</option>
+                        <option value="price-asc">Giá: Thấp - Cao</option>
+                        <option value="price-desc">Giá: Cao - Thấp</option>
+                        <option value="rating">Đánh Giá Cao</option>
+                    </select>
+                </div>
+
+                <!-- Apply Filters Button -->
+                <button class="btn btn-primary w-100" id="apply-filters">
+                    <i class="bi bi-check-circle"></i> Áp Dụng Bộ Lọc
+                </button>
+                <button class="btn btn-outline-secondary w-100 mt-2" id="reset-filters">
+                    <i class="bi bi-arrow-clockwise"></i> Đặt Lại
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content - Products -->
+    <div class="col-md-9">
+        <!-- Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h2">Danh Sách Sản Phẩm</h1>
+            <div class="btn-group" role="group">
+                <input type="radio" class="btn-check" name="view" id="grid-view" checked>
+                <label class="btn btn-outline-primary" for="grid-view">
+                    <i class="bi bi-grid-3x3-gap"></i>
+                </label>
+
+                <input type="radio" class="btn-check" name="view" id="list-view">
+                <label class="btn btn-outline-primary" for="list-view">
+                    <i class="bi bi-list-ul"></i>
+                </label>
+            </div>
+        </div>
+
+        <!-- Products Grid -->
+        <div class="row" id="products-container">
+            @if (Model != null && Model.Count > 0)
+            {
+                @foreach (var product in Model)
+                {
+                    var discountPercent = product.DiscountPrice.HasValue 
+                        ? (int)((1 - product.DiscountPrice.Value / product.Price) * 100) 
+                        : 0;
+                    <div class="col-md-6 col-lg-4 mb-4 product-item">
+                        <div class="card product-card h-100 shadow-sm">
+                            <div class="position-relative overflow-hidden" style="height: 250px; background: #f8f9fa;">
+                                <img src="@(string.IsNullOrEmpty(product.Image) ? "https://via.placeholder.com/300x200?text=" + System.Net.WebUtility.UrlEncode(product.ProductName) : product.Image)" 
+                                     class="card-img-top"
+                                     style="width: 100%; height: 100%; object-fit: cover; object-position: center;" 
+                                     alt="@product.ProductName - Mua online tại KLDShop"
+                                     loading="lazy"
+                                     decoding="async"
+                                     width="300"
+                                     height="200">
+                                @if (discountPercent > 0)
+                                {
+                                    <span class="badge bg-danger position-absolute top-0 end-0 m-2">-@discountPercent%</span>
+                                }
+                            </div>
+                            <div class="card-body">
+                                <h5 class="card-title">@product.ProductName</h5>
+                                <p class="card-text text-muted small">@(string.IsNullOrEmpty(product.Description) ? "Mô tả sản phẩm" : (product.Description?.Length > 50 ? product.Description.Substring(0, 50) : product.Description))...</p>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        @if (product?.DiscountPrice.HasValue == true)
+                                        {
+                                            <span class="h6 text-danger fw-bold">@product.DiscountPrice.Value.ToString("N0")đ</span><br>
+                                            <small class="text-muted"><s>@product.Price.ToString("N0")đ</s></small>
+                                        }
+                                        else
+                                        {
+                                            <span class="h6 text-danger fw-bold">@product?.Price.ToString("N0")đ</span>
+                                        }
+                                    </div>
+                                    <div class="text-warning small">
+                                        <i class="bi bi-star-fill"></i>
+                                        <i class="bi bi-star-fill"></i>
+                                        <i class="bi bi-star-fill"></i>
+                                        <i class="bi bi-star-fill"></i>
+                                        <i class="bi bi-star"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-footer bg-white border-top">
+                                @{
+                                    var productUrl = !string.IsNullOrEmpty(product?.Slug)
+                                        ? Url.Action("DetailsBySlug", "Product", new { slug = product.Slug })
+                                        : Url.Action("Details", "Product", new { id = product?.ProductId ?? 0 });
+                                }
+                                <div class="d-flex gap-2 mb-2">
+                                    <a href="@productUrl" class="btn btn-primary btn-sm flex-grow-1">
+                                        <i class="bi bi-eye"></i> Chi Tiết
+                                    </a>
+                                    <button class="btn btn-outline-danger btn-sm wishlist-btn" 
+                                            data-product-id="@(product?.ProductId ?? 0)"
+                                            onclick="toggleWishlist(@(product?.ProductId ?? 0), this)"
+                                            title="Thêm vào yêu thích">
+                                        <i class="bi bi-heart"></i>
+                                    </button>
+                                </div>
+                                <button class="btn btn-success btn-sm w-100" onclick="addToCart(@(product?.ProductId ?? 0), 1)">
+                                    <i class="bi bi-cart-plus"></i> Thêm Vào Giỏ
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="col-12">
+                    <div class="alert alert-info text-center">
+                        <p>Không có sản phẩm nào phù hợp với tiêu chí tìm kiếm</p>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <!-- Pagination -->
+        @if (totalPages > 1)
+        {
+            <nav aria-label="Page navigation" class="mt-5">
+                <ul class="pagination justify-content-center">
+                    @if (currentPage > 1)
+                    {
+                        <li class="page-item">
+                            <a class="page-link" href="@Url.Action("List", "Product", new { page = currentPage - 1, sortBy = ViewBag.SortBy })">&laquo;</a>
+                        </li>
+                    }
+                    else
+                    {
+                        <li class="page-item disabled">
+                            <a class="page-link" href="#">&laquo;</a>
+                        </li>
+                    }
+
+                    @for (int i = 1; i <= totalPages; i++)
+                    {
+                        if (i == currentPage)
+                        {
+                            <li class="page-item active">
+                                <a class="page-link" href="#">@i</a>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="page-item">
+                                <a class="page-link" href="@Url.Action("List", "Product", new { page = i, sortBy = ViewBag.SortBy })">@i</a>
+                            </li>
+                        }
+                    }
+
+                    @if (currentPage < totalPages)
+                    {
+                        <li class="page-item">
+                            <a class="page-link" href="@Url.Action("List", "Product", new { page = currentPage + 1, sortBy = ViewBag.SortBy })">&raquo;</a>
+                        </li>
+                    }
+                    else
+                    {
+                        <li class="page-item disabled">
+                            <a class="page-link" href="#">&raquo;</a>
+                        </li>
+                    }
+                </ul>
+            </nav>
+        }
+    </div>
+</div>
+
+<!-- SEO Content Section - Beautified -->
+<div class="row mt-5">
+    <div class="col-12">
+        <div class="card border-0 shadow-lg">
+            <div class="card-header text-white text-center py-4" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                <h2 class="mb-2"><i class="bi bi-grid-3x3-gap-fill"></i> Khám Phá Hàng Ngàn Sản Phẩm Chất Lượng</h2>
+                <p class="mb-0 lead">Nơi Hội Tụ Thương Hiệu Uy Tín - Giá Cả Cạnh Tranh Nhất</p>
+            </div>
+            <div class="card-body p-5">
+                <div class="row mb-4">
+                    <div class="col-md-8">
+                        <div class="alert alert-info border-start border-4 border-primary">
+                            <h5 class="alert-heading"><i class="bi bi-star-fill text-warning"></i> Điểm Đến Mua Sắm Lý Tưởng</h5>
+                            <p class="mb-0">
+                                Chào mừng bạn đến với trang danh sách sản phẩm của KLDShop - điểm đến lý tưởng cho mọi nhu cầu mua sắm trực tuyến của bạn. 
+                                Với <strong>hơn 5 năm kinh nghiệm</strong> hoạt động trong lĩnh vực thương mại điện tử, KLDShop tự hào là một trong những nền tảng 
+                                mua sắm online hàng đầu tại Việt Nam, được <strong>hàng trăm ngàn khách hàng</strong> tin tưởng lựa chọn mỗi năm.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card bg-primary text-white h-100">
+                            <div class="card-body text-center">
+                                <i class="bi bi-trophy-fill display-3 mb-3"></i>
+                                <h5 class="card-title">Top #1</h5>
+                                <p class="card-text mb-0">E-commerce Platform</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <h4 class="text-primary mb-3"><i class="bi bi-bag-check-fill"></i> Danh Mục Sản Phẩm Đa Dạng</h4>
+                        <div class="row g-3">
+                            <div class="col-md-3 col-6">
+                                <div class="card border-primary text-center h-100">
+                                    <div class="card-body">
+                                        <i class="bi bi-laptop text-primary" style="font-size: 2.5rem;"></i>
+                                        <h6 class="mt-2 mb-0">Công Nghệ</h6>
+                                        <small class="text-muted">Điện thoại, Laptop, Tablet</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-6">
+                                <div class="card border-success text-center h-100">
+                                    <div class="card-body">
+                                        <i class="bi bi-bag-heart text-success" style="font-size: 2.5rem;"></i>
+                                        <h6 class="mt-2 mb-0">Thời Trang</h6>
+                                        <small class="text-muted">Nam, Nữ, Trẻ em</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-6">
+                                <div class="card border-warning text-center h-100">
+                                    <div class="card-body">
+                                        <i class="bi bi-house-heart text-warning" style="font-size: 2.5rem;"></i>
+                                        <h6 class="mt-2 mb-0">Đồ Gia Dụng</h6>
+                                        <small class="text-muted">Nội thất, Nhà bếp</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-6">
+                                <div class="card border-danger text-center h-100">
+                                    <div class="card-body">
+                                        <i class="bi bi-heart-pulse text-danger" style="font-size: 2.5rem;"></i>
+                                        <h6 class="mt-2 mb-0">Sức Khỏe</h6>
+                                        <small class="text-muted">Mỹ phẩm, TPCN</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <p>
+                    <strong>KLDShop</strong> tự hào là một trong những địa chỉ mua sắm trực tuyến uy tín hàng đầu tại Việt Nam, 
+                    cung cấp hàng ngàn sản phẩm chất lượng cao từ các thương hiệu nổi tiếng trong và ngoài nước. 
+                    Với bộ sưu tập đa dạng từ điện tử, công nghệ, thời trang nam nữ, đồ gia dụng, mỹ phẩm cho đến 
+                    thực phẩm chức năng, chúng tôi cam kết đáp ứng mọi nhu cầu mua sắm của bạn.
+                </p>
+                <div class="row">
+                    <div class="col-md-6">
+                        <h3 class="h5 mb-3"><i class="bi bi-check-circle-fill text-success me-2"></i>Tại Sao Nên Chọn KLDShop?</h3>
+                        <ul>
+                            <li><strong>Sản phẩm chính hãng 100%:</strong> Tất cả sản phẩm đều được nhập khẩu chính hãng, 
+                            có tem chống giả và giấy bảo hành đầy đủ từ nhà sản xuất.</li>
+                            <li><strong>Giá cả cạnh tranh:</strong> Chúng tôi cam kết cung cấp mức giá tốt nhất thị trường 
+                            với nhiều chương trình khuyến mãi hấp dẫn quanh năm.</li>
+                            <li><strong>Miễn phí vận chuyển:</strong> Giao hàng miễn phí cho đơn hàng từ 500.000đ trên toàn quốc, 
+                            nhanh chóng trong vòng 1-3 ngày làm việc.</li>
+                            <li><strong>Đổi trả dễ dàng:</strong> Chính sách đổi trả linh hoạt trong 30 ngày, 
+                            hoàn tiền 100% nếu sản phẩm có lỗi hoặc không đúng mô tả.</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h3 class="h5 mb-3"><i class="bi bi-star-fill text-warning me-2"></i>Danh Mục Sản Phẩm Nổi Bật</h3>
+                        <ul>
+                            <li><strong>Điện tử & Công nghệ:</strong> Điện thoại di động, laptop, tablet, phụ kiện công nghệ 
+                            từ các thương hiệu Apple, Samsung, Xiaomi, Dell, HP...</li>
+                            <li><strong>Thời trang:</strong> Quần áo, giày dép, túi xách, phụ kiện thời trang nam nữ 
+                            theo xu hướng mới nhất.</li>
+                            <li><strong>Đồ gia dụng:</strong> Đồ dùng nhà bếp, nội thất, thiết bị điện gia dụng, 
+                            đồ trang trí cho ngôi nhà của bạn.</li>
+                            <li><strong>Sức khỏe & Làm đẹp:</strong> Mỹ phẩm chính hãng, thực phẩm chức năng, 
+                            thiết bị chăm sóc sức khỏe và sắc đẹp.</li>
+                            <li><strong>Thể thao & Du lịch:</strong> Dụng cụ thể thao, đồ dùng du lịch, thiết bị ngoài trời 
+                            cho những chuyến phiêu lưu của bạn.</li>
+                        </ul>
+                    </div>
+                </div>
+                <p class="mt-3">
+                    <strong>Hệ thống lọc và tìm kiếm thông minh</strong> của KLDShop giúp bạn dễ dàng tìm kiếm sản phẩm theo 
+                    danh mục, khoảng giá, thương hiệu hoặc từ khóa. Bạn có thể sắp xếp sản phẩm theo giá từ thấp đến cao, 
+                    từ cao đến thấp, hoặc xem sản phẩm mới nhất, bán chạy nhất để đưa ra quyết định mua hàng tốt nhất.
+                </p>
+                <p>
+                    <strong>Thanh toán an toàn và linh hoạt</strong> với nhiều phương thức: thanh toán khi nhận hàng (COD), 
+                    chuyển khoản ngân hàng, ví điện tử (Momo, ZaloPay, VNPay), thẻ tín dụng/ghi nợ quốc tế. 
+                    Mọi giao dịch đều được mã hóa SSL/TLS đảm bảo an toàn tuyệt đối.
+                </p>
+                <p class="mb-0">
+                    <strong>Dịch vụ chăm sóc khách hàng 24/7</strong> - Đội ngũ tư vấn viên chuyên nghiệp của chúng tôi 
+                    luôn sẵn sàng hỗ trợ bạn qua hotline <strong>1900-xxxx</strong>, email <strong>support@kldshop.com</strong> 
+                    hoặc chat trực tuyến. Mọi thắc mắc đều được giải đáp nhanh chóng trong vòng 24 giờ.
+                </p>
+                
+                <h3 class="mt-5 mb-3">Hệ Thống Lọc Và Tìm Kiếm Thông Minh</h3>
+                <p>
+                    Để giúp bạn dễ dàng tìm được sản phẩm mình cần trong hàng ngàn mặt hàng, KLDShop đã đầu tư phát triển hệ thống tìm kiếm và lọc sản phẩm thông minh, 
+                    hiện đại và dễ sử dụng. Bạn có thể tìm kiếm sản phẩm theo từ khóa, lọc theo danh mục, khoảng giá phù hợp với ngân sách, thương hiệu yêu thích, 
+                    màu sắc ưa thích, kích thước cần thiết và nhiều tiêu chí khác. Hệ thống sắp xếp linh hoạt cho phép bạn xem sản phẩm theo thứ tự giá từ thấp đến cao, 
+                    từ cao đến thấp, sản phẩm mới nhất, sản phẩm bán chạy nhất hoặc sản phẩm được đánh giá cao nhất. 
+                </p>
+                <p>
+                    Đặc biệt, mỗi trang sản phẩm đều được thiết kế với thông tin chi tiết đầy đủ bao gồm hình ảnh chất lượng cao từ nhiều góc độ khác nhau, 
+                    mô tả sản phẩm chi tiết với thông số kỹ thuật cụ thể, hướng dẫn sử dụng, chính sách bảo hành và đánh giá chân thực từ những khách hàng đã mua và sử dụng. 
+                    Điều này giúp bạn có đủ thông tin để đưa ra quyết định mua hàng sáng suốt nhất, tránh được những rủi ro khi mua sắm trực tuyến.
+                </p>
+
+                <h3 class="mt-4 mb-3">Cam Kết Về Sản Phẩm Chính Hãng</h3>
+                <p>
+                    Một trong những lo ngại lớn nhất khi mua sắm online chính là vấn đề hàng giả, hàng nhái. Hiểu được điều này, KLDShop cam kết nghiêm túc rằng 
+                    100% sản phẩm trên website đều là hàng chính hãng, được nhập khẩu từ các nhà phân phối ủy quyền chính thức của thương hiệu. 
+                    Chúng tôi có quan hệ đối tác lâu dài với các thương hiệu lớn và các nhà cung cấp uy tín, đảm bảo nguồn gốc xuất xứ minh bạch. 
+                    Mỗi sản phẩm đều có tem chống giả của hãng, mã kiểm tra tính xác thực, phiếu bảo hành chính hãng đầy đủ và hóa đơn VAT hợp lệ theo quy định pháp luật.
+                </p>
+                <p>
+                    Nếu bất kỳ lý do gì khách hàng phát hiện sản phẩm mua tại KLDShop không phải hàng chính hãng, chúng tôi cam kết sẽ hoàn tiền 200% giá trị đơn hàng 
+                    và chịu trách nhiệm hoàn toàn về sự việc. Đây là cam kết mạnh mẽ thể hiện sự tự tin tuyệt đối của chúng tôi về chất lượng sản phẩm cung cấp. 
+                    Bên cạnh đó, đội ngũ kiểm định chất lượng của KLDShop luôn thực hiện kiểm tra nghiêm ngặt mọi sản phẩm trước khi đóng gói và gửi đến khách hàng, 
+                    đảm bảo sản phẩm hoạt động tốt, không có lỗi kỹ thuật và đáp ứng đúng các tiêu chuẩn chất lượng đã công bố.
+                </p>
+
+                <h3 class="mt-4 mb-3">Chính Sách Giá Tốt Nhất Thị Trường</h3>
+                <p>
+                    KLDShop cam kết mang đến cho khách hàng mức giá cạnh tranh và hợp lý nhất. Chúng tôi thường xuyên khảo sát giá thị trường và điều chỉnh giá bán 
+                    để đảm bảo luôn có lợi thế về giá so với các đối thủ cùng ngành. Bạn sẽ không phải lo lắng về việc mua phải sản phẩm với giá cao hơn ở nơi khác. 
+                    Chính sách "Hoàn tiền 110% chênh lệch" của chúng tôi là bằng chứng rõ ràng nhất cho cam kết này. Nếu trong vòng 7 ngày kể từ ngày mua hàng, 
+                    bạn tìm thấy cùng một sản phẩm với giá thấp hơn tại bất kỳ cửa hàng trực tuyến nào khác, hãy liên hệ với chúng tôi kèm bằng chứng, 
+                    KLDShop sẽ hoàn lại cho bạn 110% số tiền chênh lệch.
+                </p>
+                <p>
+                    Thêm vào đó, chúng tôi thường xuyên tổ chức các chương trình khuyến mãi hấp dẫn, giảm giá sâu vào các dịp đặc biệt như Black Friday, 
+                    ngày lễ 11/11, Tết Nguyên Đán, sinh nhật thương hiệu với mức giảm có thể lên đến 50-70%. Đăng ký nhận thông báo khuyến mãi qua email hoặc SMS 
+                    để không bỏ lỡ bất kỳ ưu đãi tuyệt vời nào. Khách hàng thành viên còn được hưởng thêm nhiều đặc quyền như tích điểm thưởng, 
+                    voucher giảm giá sinh nhật, ưu tiên mua hàng trong các đợt flash sale, và nhiều ưu đãi khác.
+                </p>
+
+                <h3 class="mt-4 mb-3">Trải Nghiệm Mua Sắm Toàn Diện</h3>
+                <p>
+                    Mua sắm tại KLDShop không chỉ là việc chọn sản phẩm và thanh toán, mà còn là cả một trải nghiệm thú vị và đáng nhớ. Chúng tôi đã xây dựng 
+                    một hệ sinh thái mua sắm hoàn chỉnh với đầy đủ các tính năng tiện ích như: danh sách yêu thích để lưu trữ các sản phẩm bạn quan tâm, 
+                    so sánh sản phẩm để đưa ra lựa chọn tốt nhất, đánh giá và nhận xét từ cộng đồng người dùng thực tế, hỏi đáp trực tiếp với bộ phận tư vấn, 
+                    theo dõi lịch sử đơn hàng và quản lý tài khoản cá nhân một cách dễ dàng.
+                </p>
+                <p>
+                    Website được tối ưu hóa để hoạt động mượt mà trên mọi thiết bị từ máy tính để bàn, laptop, máy tính bảng đến điện thoại di động, 
+                    đảm bảo bạn có thể mua sắm mọi lúc mọi nơi một cách thuận tiện. Giao diện thân thiện, dễ sử dụng với các bước đặt hàng đơn giản, 
+                    rõ ràng giúp cả những người lần đầu mua sắm online cũng có thể dễ dàng thực hiện. Hệ thống bảo mật hiện đại với công nghệ mã hóa SSL 
+                    đảm bảo an toàn tuyệt đối cho mọi giao dịch thanh toán và thông tin cá nhân của bạn.
+                </p>
+
+                <h3 class="mt-4 mb-3">Cộng Đồng Khách Hàng Tin Tưởng</h3>
+                <p>
+                    Với hơn 500,000 khách hàng đã mua sắm và hàng triệu lượt truy cập mỗi tháng, KLDShop đã và đang khẳng định vị thế là một trong những 
+                    cửa hàng trực tuyến được yêu thích nhất tại Việt Nam. Hàng ngàn đánh giá 5 sao từ khách hàng hài lòng là minh chứng rõ ràng nhất cho 
+                    chất lượng sản phẩm và dịch vụ mà chúng tôi cung cấp. Khách hàng đánh giá cao về tốc độ giao hàng nhanh chóng, đóng gói cẩn thận, 
+                    sản phẩm đúng như mô tả, giá cả hợp lý và đặc biệt là thái độ phục vụ nhiệt tình, chuyên nghiệp của đội ngũ nhân viên.
+                </p>
+                <p>
+                    Chúng tôi luôn lắng nghe ý kiến phản hồi từ khách hàng để không ngừng cải thiện và nâng cao chất lượng dịch vụ. Mỗi khiếu nại, 
+                    góp ý từ khách hàng đều được tiếp nhận, xử lý nhanh chóng và nghiêm túc. KLDShop tin rằng sự hài lòng và niềm tin của khách hàng 
+                    chính là tài sản quý giá nhất, là động lực to lớn giúp chúng tôi phát triển bền vững. Hãy tham gia cộng đồng mua sắm thông minh 
+                    của KLDShop ngay hôm nay để tận hưởng những ưu đãi tuyệt vời và trải nghiệm dịch vụ xuất sắc mà chúng tôi mang lại!
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Apply filters
+        $('#apply-filters').click(function () {
+            let search = $('#search-input').val().trim();
+            let categoryId = $('#category-filter').val();
+            let minPrice = $('#min-price').val();
+            let maxPrice = $('#max-price').val();
+            let sortBy = $('#sort-by').val();
+            
+            // Build URL with parameters
+            let url = '@Url.Action("List", "Product")?' + 
+                      'search=' + encodeURIComponent(search) +
+                      '&categoryId=' + encodeURIComponent(categoryId) +
+                      '&minPrice=' + encodeURIComponent(minPrice) +
+                      '&maxPrice=' + encodeURIComponent(maxPrice) +
+                      '&sortBy=' + encodeURIComponent(sortBy) +
+                      '&page=1';
+            
+            window.location.href = url;
+        });
+
+        // Search on Enter key
+        $('#search-input').keypress(function (e) {
+            if (e.which == 13) { // Enter key
+                $('#apply-filters').click();
+                return false;
+            }
+        });
+
+        // Reset filters
+        $('#reset-filters').click(function () {
+            $('#search-input').val('');
+            $('#category-filter').val('0');
+            $('#min-price').val('');
+            $('#max-price').val('');
+            $('#sort-by').val('latest');
+            window.location.href = '@Url.Action("List", "Product")';
+        });
+
+        // Category change
+        $('#category-filter').change(function () {
+            $('#apply-filters').click();
+        });
+
+        // Sort by change
+        $('#sort-by').change(function () {
+            $('#apply-filters').click();
+        });
+
+        // View toggle
+        $('#grid-view').change(function () {
+            $('#products-container').removeClass('list-view').addClass('grid-view');
+        });
+
+        $('#list-view').change(function () {
+            $('#products-container').removeClass('grid-view').addClass('list-view');
+        });
+
+        function addToCart(productId, quantity) {
+            $.post('@Url.Action("AddToCart", "Cart")', {
+                productId: productId,
+                quantity: quantity
+            }, function (data) {
+                if (data.success) {
+                    KLDShop.showNotification('success', data.message);
+                    updateCartBadge();
+                } else {
+                    KLDShop.showNotification('danger', data.message);
+                }
+            });
+        }
+
+        function updateCartBadge() {
+            $.get('@Url.Action("GetCartSummary", "Cart")', function (data) {
+                $('#cart-count').text(data.itemCount);
+            });
+        }
+
+        function updateWishlistBadge() {
+            $.get('@Url.Action("GetCount", "Wishlist")', function (data) {
+                if (data.count > 0) {
+                    $('#wishlist-count').text(data.count).show();
+                } else {
+                    $('#wishlist-count').hide();
+                }
+            });
+        }
+
+        function toggleWishlist(productId, button) {
+            $.post('@Url.Action("Add", "Wishlist")', { productId: productId }, function(data) {
+                if (data.success) {
+                    // Change button to filled heart
+                    $(button).removeClass('btn-outline-danger').addClass('btn-danger');
+                    $(button).find('i').removeClass('bi-heart').addClass('bi-heart-fill');
+                    $(button).attr('onclick', `toggleWishlistRemove(${productId}, this)`);
+                    
+                    KLDShop.showNotification('success', data.message);
+                    updateWishlistBadge();
+                } else if (data.requireLogin) {
+                    if (confirm('Vui lòng đăng nhập để thêm vào yêu thích. Chuyển đến trang đăng nhập?')) {
+                        window.location.href = '@Url.Action("Login", "Account")?returnUrl=' + encodeURIComponent(window.location.pathname);
+                    }
+                } else if (data.alreadyExists) {
+                    // Already in wishlist, remove it
+                    toggleWishlistRemove(productId, button);
+                } else {
+                    KLDShop.showNotification('danger', data.message);
+                }
+            });
+        }
+
+        function toggleWishlistRemove(productId, button) {
+            $.post('@Url.Action("Remove", "Wishlist")', { productId: productId }, function(data) {
+                if (data.success) {
+                    // Change button back to outline heart
+                    $(button).removeClass('btn-danger').addClass('btn-outline-danger');
+                    $(button).find('i').removeClass('bi-heart-fill').addClass('bi-heart');
+                    $(button).attr('onclick', `toggleWishlist(${productId}, this)`);
+                    
+                    KLDShop.showNotification('success', data.message);
+                    updateWishlistBadge();
+                } else {
+                    KLDShop.showNotification('danger', data.message);
+                }
+            });
+        }
+
+        // Check wishlist status for all products on page load
+        $(document).ready(function() {
+            $('.wishlist-btn').each(function() {
+                var productId = $(this).data('product-id');
+                var button = this;
+                
+                $.get('@Url.Action("Check", "Wishlist")', { productId: productId }, function(data) {
+                    if (data.inWishlist) {
+                        $(button).removeClass('btn-outline-danger').addClass('btn-danger');
+                        $(button).find('i').removeClass('bi-heart').addClass('bi-heart-fill');
+                        $(button).attr('onclick', `toggleWishlistRemove(${productId}, this)`);
+                    }
+                });
+            });
+        });
+
+        updateCartBadge();
+    </script>
+}

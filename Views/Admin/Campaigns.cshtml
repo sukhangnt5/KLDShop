@@ -1,0 +1,190 @@
+@model IEnumerable<KLDShop.Models.EmailCampaign>
+@{
+    ViewData["Title"] = "Email Campaigns";
+}
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col">
+            <h2><i class="bi bi-mailbox"></i> Quản Lý Email Campaigns</h2>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a asp-action="Dashboard">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Newsletter">Newsletter</a></li>
+                    <li class="breadcrumb-item active">Campaigns</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col">
+            <a asp-action="CreateCampaign" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> Tạo Campaign Mới
+            </a>
+            <a asp-action="Newsletter" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Quay Lại
+            </a>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h5><i class="bi bi-list"></i> Danh Sách Campaigns</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Tiêu Đề</th>
+                            <th>Người Gửi</th>
+                            <th>Ngày Tạo</th>
+                            <th>Ngày Gửi</th>
+                            <th>Người Nhận</th>
+                            <th>Trạng Thái</th>
+                            <th>Thống Kê</th>
+                            <th>Thao Tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model != null && Model.Any())
+                        {
+                            @foreach (var campaign in Model)
+                            {
+                                <tr>
+                                    <td>@campaign.CampaignId</td>
+                                    <td>
+                                        <strong>@campaign.Subject</strong>
+                                        @if (!string.IsNullOrEmpty(campaign.PreviewText))
+                                        {
+                                            <br><small class="text-muted">@campaign.PreviewText</small>
+                                        }
+                                    </td>
+                                    <td>
+                                        @campaign.FromName<br>
+                                        <small class="text-muted">@campaign.FromEmail</small>
+                                    </td>
+                                    <td>@campaign.CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>
+                                    <td>
+                                        @if (campaign.SentAt.HasValue)
+                                        {
+                                            @campaign.SentAt.Value.ToString("dd/MM/yyyy HH:mm")
+                                        }
+                                        else if (campaign.ScheduledAt.HasValue)
+                                        {
+                                            <span class="text-warning">@campaign.ScheduledAt.Value.ToString("dd/MM/yyyy HH:mm")</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">-</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (campaign.RecipientCount.HasValue)
+                                        {
+                                            <span>@campaign.RecipientCount.Value</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">-</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (campaign.Status == "draft")
+                                        {
+                                            <span class="badge bg-secondary">Nháp</span>
+                                        }
+                                        else if (campaign.Status == "scheduled")
+                                        {
+                                            <span class="badge bg-warning">Đã lên lịch</span>
+                                        }
+                                        else if (campaign.Status == "sent")
+                                        {
+                                            <span class="badge bg-success">Đã gửi</span>
+                                        }
+                                        else if (campaign.Status == "cancelled")
+                                        {
+                                            <span class="badge bg-danger">Đã hủy</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (campaign.Status == "sent" && campaign.OpenCount.HasValue)
+                                        {
+                                            <small>
+                                                <i class="bi bi-envelope-open"></i> @campaign.OpenCount<br>
+                                                <i class="bi bi-cursor"></i> @campaign.ClickCount
+                                            </small>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">-</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (campaign.Status == "draft")
+                                        {
+                                            <a asp-action="EditCampaign" asp-route-id="@campaign.CampaignId" class="btn btn-sm btn-primary">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+                                            <form method="post" asp-action="SendCampaign" style="display: inline;">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="id" value="@campaign.CampaignId" />
+                                                <button type="submit" class="btn btn-sm btn-success" onclick="return confirm('Gửi campaign này?')">
+                                                    <i class="bi bi-send"></i>
+                                                </button>
+                                            </form>
+                                        }
+                                        @if (campaign.Status == "sent")
+                                        {
+                                            <a asp-action="CampaignReport" asp-route-id="@campaign.CampaignId" class="btn btn-sm btn-info">
+                                                <i class="bi bi-bar-chart"></i>
+                                            </a>
+                                        }
+                                        <button class="btn btn-sm btn-danger" onclick="deleteCampaign(@campaign.CampaignId)">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="9" class="text-center">Chưa có campaign nào</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function deleteCampaign(id) {
+            if (confirm('Bạn có chắc chắn muốn xóa campaign này?')) {
+                $.ajax({
+                    url: '@Url.Action("DeleteCampaign", "Admin")',
+                    type: 'POST',
+                    data: { id: id },
+                    headers: {
+                        'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                    },
+                    success: function(result) {
+                        if (result.success) {
+                            location.reload();
+                        } else {
+                            alert('Có lỗi xảy ra: ' + result.message);
+                        }
+                    },
+                    error: function() {
+                        alert('Có lỗi xảy ra khi xóa campaign');
+                    }
+                });
+            }
+        }
+    </script>
+}

@@ -1,0 +1,73 @@
+/* Image Optimization Styles */
+
+/* Lazy loading blur effect */
+img[loading="lazy"] {
+    transition: opacity 0.3s ease-in-out;
+}
+
+img[loading="lazy"]:not([src]) {
+    opacity: 0;
+}
+
+/* Aspect ratio boxes to prevent layout shift */
+.img-aspect-ratio {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+}
+
+.img-aspect-ratio::before {
+    content: "";
+    display: block;
+    padding-top: 66.67%; /* 3:2 aspect ratio */
+}
+
+.img-aspect-ratio img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Product card images */
+.product-card img {
+    transition: transform 0.3s ease;
+}
+
+.product-card:hover img {
+    transform: scale(1.05);
+}
+
+/* Prevent CLS (Cumulative Layout Shift) */
+.card-img-top {
+    aspect-ratio: 3 / 2;
+    object-fit: cover;
+}
+
+/* Image loading skeleton */
+img[loading="lazy"]::before {
+    content: "";
+    display: block;
+    padding-top: 66.67%;
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: -200% 0;
+    }
+    100% {
+        background-position: 200% 0;
+    }
+}
+
+/* Responsive images */
+@media (max-width: 768px) {
+    .card-img-top {
+        aspect-ratio: 1 / 1;
+    }
+}
