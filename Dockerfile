@@ -30,7 +30,11 @@ if [ ! -z "$PORT" ]; then\n\
   export ASPNETCORE_URLS="http://+:$PORT"\n\
 fi\n\
 echo "Running database migrations..."\n\
-./efbundle --connection "$DATABASE_URL" || echo "Migration failed, continuing..."\n\
+if [ ! -z "$DATABASE_URL" ]; then\n\
+  ./efbundle --connection "$DATABASE_URL" || echo "Migration failed, continuing..."\n\
+else\n\
+  echo "DATABASE_URL not set, skipping migrations"\n\
+fi\n\
 echo "Starting application..."\n\
 dotnet KLDShop.dll' > /app/start.sh && chmod +x /app/start.sh
 
