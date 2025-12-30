@@ -15,8 +15,21 @@ Console.WriteLine($"DATABASE_URL exists: {!string.IsNullOrEmpty(databaseUrl)}");
 if (!string.IsNullOrEmpty(databaseUrl))
 {
     // Railway uses PostgreSQL with DATABASE_URL environment variable
+    // Convert postgres:// format to Npgsql format if needed
+    var connectionString = databaseUrl;
+    if (databaseUrl.StartsWith("postgres://"))
+    {
+        connectionString = databaseUrl.Replace("postgres://", "");
+        var parts = connectionString.Split('@');
+        var userPass = parts[0].Split(':');
+        var hostDbParts = parts[1].Split('/');
+        var hostPort = hostDbParts[0].Split(':');
+        
+        connectionString = $"Host={hostPort[0]};Port={hostPort[1]};Database={hostDbParts[1]};Username={userPass[0]};Password={userPass[1]};SSL Mode=Require;Trust Server Certificate=true";
+    }
+    
     builder.Services.AddDbContext<ApplicationDbContext>(options =>
-        options.UseNpgsql(databaseUrl));
+        options.UseNpgsql(connectionString));
 }
 else
 {
