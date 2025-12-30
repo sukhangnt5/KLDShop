@@ -11,6 +11,7 @@ builder.Services.AddControllersWithViews();
 // Support Railway environment variable for database (PostgreSQL)
 // Use PostgreSQL for both local development and Railway production
 var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
+Console.WriteLine($"DATABASE_URL exists: {!string.IsNullOrEmpty(databaseUrl)}");
 if (!string.IsNullOrEmpty(databaseUrl))
 {
     // Railway uses PostgreSQL with DATABASE_URL environment variable
