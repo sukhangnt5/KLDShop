@@ -12,20 +12,26 @@ builder.Services.AddControllersWithViews();
 // Use PostgreSQL for both local development and Railway production
 var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
 Console.WriteLine($"DATABASE_URL exists: {!string.IsNullOrEmpty(databaseUrl)}");
+Console.WriteLine($"DATABASE_URL starts with: {(string.IsNullOrEmpty(databaseUrl) ? "NULL" : databaseUrl.Substring(0, Math.Min(20, databaseUrl.Length)))}...");
+
 if (!string.IsNullOrEmpty(databaseUrl))
 {
     // Railway uses PostgreSQL with DATABASE_URL environment variable
-    // Convert postgres:// format to Npgsql format if needed
+    // Convert postgres:// or postgresql:// format to Npgsql format if needed
     var connectionString = databaseUrl;
-    if (databaseUrl.StartsWith("postgres://"))
+    
+    if (databaseUrl.StartsWith("postgres://") || databaseUrl.StartsWith("postgresql://"))
     {
-        connectionString = databaseUrl.Replace("postgres://", "");
-        var parts = connectionString.Split('@');
-        var userPass = parts[0].Split(':');
-        var hostDbParts = parts[1].Split('/');
-        var hostPort = hostDbParts[0].Split(':');
-        
-        connectionString = $"Host={hostPort[0]};Port={hostPort[1]};Database={hostDbParts[1]};Username={userPass[0]};Password={userPass[1]};SSL Mode=Require;Trust Server Certificate=true";
+        try
+        {
+            var uri = new Uri(databaseUrl);
+            connectionString = $"Host={uri.Host};Port={uri.Port};Database={uri.LocalPath.TrimStart('/')};Username={uri.UserInfo.Split(':')[0]};Password={uri.UserInfo.Split(':')[1]};SSL Mode=Require;Trust Server Certificate=true";
+            Console.WriteLine("Converted DATABASE_URL format successfully");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error converting DATABASE_URL: {ex.Message}");
+        }
     }
     
     builder.Services.AddDbContext<ApplicationDbContext>(options =>
