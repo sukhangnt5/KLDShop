@@ -17,6 +17,21 @@ namespace KLDShop.Controllers
             _context = context;
         }
 
+        // GET: Run migrations
+        [HttpGet]
+        public async Task<IActionResult> RunMigrations()
+        {
+            try
+            {
+                await _context.Database.MigrateAsync();
+                return Ok(new { success = true, message = "Migrations đã chạy thành công!" });
+            }
+            catch (Exception ex)
+            {
+                return Ok(new { success = false, message = "Lỗi: " + ex.Message, innerException = ex.InnerException?.Message });
+            }
+        }
+
         // GET: Seed test data
         public async Task<IActionResult> InitTestData()
         {
