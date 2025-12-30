@@ -145,11 +145,11 @@ namespace KLDShop.Controllers
             order.Status = status;
             if (status == "Shipped")
             {
-                order.ShippedAt = DateTime.Now;
+                order.ShippedAt = DateTime.UtcNow;
             }
             else if (status == "Delivered")
             {
-                order.DeliveredAt = DateTime.Now;
+                order.DeliveredAt = DateTime.UtcNow;
             }
 
             _context.Orders.Update(order);
@@ -172,7 +172,7 @@ namespace KLDShop.Controllers
             }
 
             product.IsActive = isActive;
-            product.UpdatedAt = DateTime.Now;
+            product.UpdatedAt = DateTime.UtcNow;
             _context.Products.Update(product);
             await _context.SaveChangesAsync();
 
@@ -207,8 +207,8 @@ namespace KLDShop.Controllers
                 {
                     // Generate slug from product name
                     product.Slug = Helpers.SlugHelper.GenerateSlug(product.ProductName);
-                    product.CreatedAt = DateTime.Now;
-                    product.UpdatedAt = DateTime.Now;
+                    product.CreatedAt = DateTime.UtcNow;
+                    product.UpdatedAt = DateTime.UtcNow;
                     product.Views = 0;
 
                     _context.Products.Add(product);
@@ -220,7 +220,7 @@ namespace KLDShop.Controllers
                         foreach (var img in productImages.Where(i => !string.IsNullOrWhiteSpace(i.ImageUrl)))
                         {
                             img.ProductId = product.ProductId;
-                            img.CreatedAt = DateTime.Now;
+                            img.CreatedAt = DateTime.UtcNow;
                             _context.ProductImages.Add(img);
                         }
                         await _context.SaveChangesAsync();
@@ -313,7 +313,7 @@ namespace KLDShop.Controllers
                     existingProduct.Manufacturer = product.Manufacturer;
                     existingProduct.WarrantyPeriod = product.WarrantyPeriod;
                     existingProduct.IsActive = product.IsActive;
-                    existingProduct.UpdatedAt = DateTime.Now;
+                    existingProduct.UpdatedAt = DateTime.UtcNow;
 
                     // Update product images
                     if (productImages != null)
@@ -340,7 +340,7 @@ namespace KLDShop.Controllers
                                         ProductId = id,
                                         ImageUrl = img.ImageUrl,
                                         DisplayOrder = img.DisplayOrder,
-                                        CreatedAt = DateTime.Now
+                                        CreatedAt = DateTime.UtcNow
                                     });
                                 }
                             }
@@ -541,7 +541,7 @@ namespace KLDShop.Controllers
                     await _mailChimpService.UnsubscribeAsync(email);
                     subscriber.IsActive = false;
                     subscriber.Status = "unsubscribed";
-                    subscriber.UnsubscribedAt = DateTime.Now;
+                    subscriber.UnsubscribedAt = DateTime.UtcNow;
                     await _context.SaveChangesAsync();
 
                     TempData["Success"] = "Đã hủy đăng ký thành công";
@@ -576,7 +576,7 @@ namespace KLDShop.Controllers
             }
 
             var bytes = Encoding.UTF8.GetBytes(csv.ToString());
-            return File(bytes, "text/csv", $"subscribers_{DateTime.Now:yyyyMMdd}.csv");
+            return File(bytes, "text/csv", $"subscribers_{DateTime.UtcNow:yyyyMMdd}.csv");
         }
 
         // GET: Email Campaigns
@@ -631,7 +631,7 @@ namespace KLDShop.Controllers
                     ReplyTo = ReplyTo,
                     HtmlContent = HtmlContent,
                     ScheduledAt = ScheduledAt,
-                    CreatedAt = DateTime.Now,
+                    CreatedAt = DateTime.UtcNow,
                     CreatedByUserId = userId,
                     Status = "draft"
                 };
@@ -654,7 +654,7 @@ namespace KLDShop.Controllers
                         if (sent)
                         {
                             campaign.Status = "sent";
-                            campaign.SentAt = DateTime.Now;
+                            campaign.SentAt = DateTime.UtcNow;
                             TempData["Success"] = "Campaign đã được gửi thành công!";
                         }
                     }
@@ -713,7 +713,7 @@ namespace KLDShop.Controllers
                     if (sent)
                     {
                         campaign.Status = "sent";
-                        campaign.SentAt = DateTime.Now;
+                        campaign.SentAt = DateTime.UtcNow;
                         campaign.RecipientCount = await _context.Newsletters.CountAsync(n => n.IsActive);
                         await _context.SaveChangesAsync();
 
@@ -763,3 +763,4 @@ namespace KLDShop.Controllers
         }
     }
 }
+

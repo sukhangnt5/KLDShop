@@ -55,7 +55,7 @@ namespace KLDShop.Controllers
                     {
                         existingSubscriber.IsActive = true;
                         existingSubscriber.Status = "subscribed";
-                        existingSubscriber.SubscribedAt = DateTime.Now;
+                        existingSubscriber.SubscribedAt = DateTime.UtcNow;
                         existingSubscriber.UnsubscribedAt = null;
                     }
                     else
@@ -65,7 +65,7 @@ namespace KLDShop.Controllers
                             Email = email,
                             FirstName = firstName,
                             LastName = lastName,
-                            SubscribedAt = DateTime.Now,
+                            SubscribedAt = DateTime.UtcNow,
                             IsActive = true,
                             Status = "subscribed",
                             Source = source
@@ -131,7 +131,7 @@ namespace KLDShop.Controllers
                     // Update database
                     subscriber.IsActive = false;
                     subscriber.Status = "unsubscribed";
-                    subscriber.UnsubscribedAt = DateTime.Now;
+                    subscriber.UnsubscribedAt = DateTime.UtcNow;
                     await _context.SaveChangesAsync();
 
                     TempData["NewsletterSuccess"] = "Bạn đã hủy đăng ký thành công.";
@@ -147,3 +147,4 @@ namespace KLDShop.Controllers
         }
     }
 }
+

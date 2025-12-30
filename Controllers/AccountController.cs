@@ -56,7 +56,7 @@ namespace KLDShop.Controllers
             HttpContext.Session.SetInt32("IsAdmin", user.IsAdmin ? 1 : 0);
 
             // Cập nhật thời gian đăng nhập cuối cùng
-            user.LastLoginAt = DateTime.Now;
+            user.LastLoginAt = DateTime.UtcNow;
             _context.Users.Update(user);
             await _context.SaveChangesAsync();
 
@@ -150,8 +150,8 @@ namespace KLDShop.Controllers
                 PasswordHash = HashPassword(password),
                 IsActive = true,
                 IsAdmin = false,
-                CreatedAt = DateTime.Now,
-                UpdatedAt = DateTime.Now
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
             };
 
             _context.Users.Add(user);
@@ -211,7 +211,7 @@ namespace KLDShop.Controllers
             user.PostalCode = postalCode;
             user.Gender = gender;
             user.DateOfBirth = dateOfBirth;
-            user.UpdatedAt = DateTime.Now;
+            user.UpdatedAt = DateTime.UtcNow;
 
             _context.Users.Update(user);
             await _context.SaveChangesAsync();
@@ -267,7 +267,7 @@ namespace KLDShop.Controllers
             }
 
             currentUser.PasswordHash = HashPassword(newPassword);
-            currentUser.UpdatedAt = DateTime.Now;
+            currentUser.UpdatedAt = DateTime.UtcNow;
             _context.Users.Update(currentUser);
             await _context.SaveChangesAsync();
 
@@ -306,8 +306,8 @@ namespace KLDShop.Controllers
                                     Quantity = item.Quantity,
                                     Price = item.Price,
                                     DiscountPrice = item.DiscountPrice,
-                                    CreatedAt = DateTime.Now,
-                                    UpdatedAt = DateTime.Now
+                                    CreatedAt = DateTime.UtcNow,
+                                    UpdatedAt = DateTime.UtcNow
                                 };
                                 _context.CartSessions.Add(cartSession);
                             }
@@ -343,3 +343,4 @@ namespace KLDShop.Controllers
         }
     }
 }
+

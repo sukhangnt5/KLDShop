@@ -1,4 +1,4 @@
-# Build stage
+# Use .NET 8.0 SDK for build
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /app
 
@@ -10,14 +10,20 @@ RUN dotnet restore
 COPY . ./
 RUN dotnet publish -c Release -o out
 
-# Runtime stage
+# Build runtime image
 FROM mcr.microsoft.com/dotnet/aspnet:8.0
 WORKDIR /app
 COPY --from=build /app/out .
 
-# Railway provides PORT environment variable
-ENV ASPNETCORE_URLS=http://+:$PORT
+# Expose port (Railway will set PORT env variable)
+EXPOSE 8080
+ENV ASPNETCORE_URLS=http://+:8080
 
-EXPOSE $PORT
+# Create a startup script to handle PORT variable
+RUN echo '#!/bin/sh\n\
+if [ ! -z "$PORT" ]; then\n\
+  export ASPNETCORE_URLS="http://+:$PORT"\n\
+fi\n\
+dotnet KLDShop.dll' > /app/start.sh && chmod +x /app/start.sh
 
-ENTRYPOINT ["dotnet", "KLDShop.dll"]
+ENTRYPOINT ["/app/start.sh"]

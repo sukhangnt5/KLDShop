@@ -112,7 +112,7 @@ namespace KLDShop.Controllers
                         Quantity = quantity,
                         Price = product.Price,
                         DiscountPrice = product.DiscountPrice,
-                        AddedAt = DateTime.Now
+                        AddedAt = DateTime.UtcNow
                     };
                     cart.Add(cartItem);
                 }
@@ -128,7 +128,7 @@ namespace KLDShop.Controllers
                     if (existingCartSession != null)
                     {
                         existingCartSession.Quantity += quantity;
-                        existingCartSession.UpdatedAt = DateTime.Now;
+                        existingCartSession.UpdatedAt = DateTime.UtcNow;
                         _context.CartSessions.Update(existingCartSession);
                     }
                     else
@@ -140,8 +140,8 @@ namespace KLDShop.Controllers
                             Quantity = quantity,
                             Price = product.Price,
                             DiscountPrice = product.DiscountPrice,
-                            CreatedAt = DateTime.Now,
-                            UpdatedAt = DateTime.Now
+                            CreatedAt = DateTime.UtcNow,
+                            UpdatedAt = DateTime.UtcNow
                         };
                         _context.CartSessions.Add(cartSession);
                     }
@@ -196,7 +196,7 @@ namespace KLDShop.Controllers
                 if (cartSession != null)
                 {
                     cartSession.Quantity = quantity;
-                    cartSession.UpdatedAt = DateTime.Now;
+                    cartSession.UpdatedAt = DateTime.UtcNow;
                     _context.CartSessions.Update(cartSession);
                     await _context.SaveChangesAsync();
                 }
@@ -307,3 +307,4 @@ namespace KLDShop.Controllers
         }
     }
 }
+

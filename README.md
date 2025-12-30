@@ -63,9 +63,9 @@ dotnet ef database update
 ```
 
 Or run the SQL scripts in order:
-1. `KLDShop_Database.sql`
-2. `Database_Newsletter_EmailCampaign.sql`
-3. `Database_ProductImages.sql`
+1. `SQL/KLDShop_Database.sql`
+2. `SQL/Database_Newsletter_EmailCampaign.sql`
+3. `SQL/Database_ProductImages.sql`
 
 ### 4. Configure Payment Gateways (Optional)
 

@@ -105,8 +105,8 @@ namespace KLDShop.Controllers
                 }
 
                 // Generate order number
-                order.OrderNumber = $"ORD-{DateTime.Now:yyyyMMddHHmmss}";
-                order.OrderDate = DateTime.Now;
+                order.OrderNumber = $"ORD-{DateTime.UtcNow:yyyyMMddHHmmss}";
+                order.OrderDate = DateTime.UtcNow;
                 order.Status = "Pending";
                 order.PaymentStatus = paymentMethod == "Cash" ? "Pending" : "Unpaid";
 
@@ -157,7 +157,7 @@ namespace KLDShop.Controllers
                             UnitPrice = product.Price,
                             DiscountPrice = product.DiscountPrice,
                             TotalPrice = (product.DiscountPrice ?? product.Price) * item.Quantity,
-                            CreatedAt = DateTime.Now
+                            CreatedAt = DateTime.UtcNow
                         };
                         _context.OrderDetails.Add(orderDetail);
 
@@ -339,9 +339,9 @@ namespace KLDShop.Controllers
                             PaymentAmount = order.FinalAmount,
                             PaymentStatus = "Paid",
                             TransactionId = vnp_TxnRef,
-                            TransactionDate = DateTime.Now,
-                            PaymentDate = DateTime.Now,
-                            CreatedAt = DateTime.Now
+                            TransactionDate = DateTime.UtcNow,
+                            PaymentDate = DateTime.UtcNow,
+                            CreatedAt = DateTime.UtcNow
                         };
 
                         _context.Payments.Add(payment);
@@ -450,10 +450,10 @@ namespace KLDShop.Controllers
                     PaymentAmount = order.FinalAmount,
                     PaymentStatus = "Paid",
                     TransactionId = finalTransactionId, // Use capture ID instead of order ID
-                    TransactionDate = DateTime.Now,
-                    PaymentDate = DateTime.Now,
+                    TransactionDate = DateTime.UtcNow,
+                    PaymentDate = DateTime.UtcNow,
                     Notes = $"PayPal Order ID: {token}", // Store order ID in notes for reference
-                    CreatedAt = DateTime.Now
+                    CreatedAt = DateTime.UtcNow
                 };
 
                 _context.Payments.Add(payment);
@@ -525,10 +525,10 @@ namespace KLDShop.Controllers
                     PaymentAmount = order.FinalAmount,
                     PaymentStatus = "Paid",
                     TransactionId = transactionId, // Use the actual transaction ID (capture ID)
-                    TransactionDate = DateTime.Now,
-                    PaymentDate = DateTime.Now,
+                    TransactionDate = DateTime.UtcNow,
+                    PaymentDate = DateTime.UtcNow,
                     Notes = $"PayPal Order ID: {paypalOrderId}", // Store order ID in notes for reference
-                    CreatedAt = DateTime.Now
+                    CreatedAt = DateTime.UtcNow
                 };
 
                 _context.Payments.Add(payment);
@@ -736,11 +736,11 @@ namespace KLDShop.Controllers
             order.Status = status;
             if (status == "Shipped")
             {
-                order.ShippedAt = DateTime.Now;
+                order.ShippedAt = DateTime.UtcNow;
             }
             else if (status == "Delivered")
             {
-                order.DeliveredAt = DateTime.Now;
+                order.DeliveredAt = DateTime.UtcNow;
             }
 
             _context.Orders.Update(order);
@@ -750,3 +750,4 @@ namespace KLDShop.Controllers
         }
     }
 }
+

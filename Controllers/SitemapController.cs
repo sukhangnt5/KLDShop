@@ -31,7 +31,7 @@ namespace KLDShop.Controllers
             // Homepage
             sitemap.AppendLine("  <url>");
             sitemap.AppendLine($"    <loc>{baseUrl}/</loc>");
-            sitemap.AppendLine($"    <lastmod>{DateTime.Now:yyyy-MM-dd}</lastmod>");
+            sitemap.AppendLine($"    <lastmod>{DateTime.UtcNow:yyyy-MM-dd}</lastmod>");
             sitemap.AppendLine("    <changefreq>daily</changefreq>");
             sitemap.AppendLine("    <priority>1.0</priority>");
             sitemap.AppendLine("  </url>");
@@ -39,7 +39,7 @@ namespace KLDShop.Controllers
             // Products list page
             sitemap.AppendLine("  <url>");
             sitemap.AppendLine($"    <loc>{baseUrl}/Product/List</loc>");
-            sitemap.AppendLine($"    <lastmod>{DateTime.Now:yyyy-MM-dd}</lastmod>");
+            sitemap.AppendLine($"    <lastmod>{DateTime.UtcNow:yyyy-MM-dd}</lastmod>");
             sitemap.AppendLine("    <changefreq>daily</changefreq>");
             sitemap.AppendLine("    <priority>0.9</priority>");
             sitemap.AppendLine("  </url>");
@@ -47,7 +47,7 @@ namespace KLDShop.Controllers
             // About page
             sitemap.AppendLine("  <url>");
             sitemap.AppendLine($"    <loc>{baseUrl}/Home/About</loc>");
-            sitemap.AppendLine($"    <lastmod>{DateTime.Now:yyyy-MM-dd}</lastmod>");
+            sitemap.AppendLine($"    <lastmod>{DateTime.UtcNow:yyyy-MM-dd}</lastmod>");
             sitemap.AppendLine("    <changefreq>monthly</changefreq>");
             sitemap.AppendLine("    <priority>0.5</priority>");
             sitemap.AppendLine("  </url>");
@@ -55,7 +55,7 @@ namespace KLDShop.Controllers
             // Contact page
             sitemap.AppendLine("  <url>");
             sitemap.AppendLine($"    <loc>{baseUrl}/Home/Contact</loc>");
-            sitemap.AppendLine($"    <lastmod>{DateTime.Now:yyyy-MM-dd}</lastmod>");
+            sitemap.AppendLine($"    <lastmod>{DateTime.UtcNow:yyyy-MM-dd}</lastmod>");
             sitemap.AppendLine("    <changefreq>monthly</changefreq>");
             sitemap.AppendLine("    <priority>0.5</priority>");
             sitemap.AppendLine("  </url>");
@@ -63,7 +63,7 @@ namespace KLDShop.Controllers
             // FAQ page
             sitemap.AppendLine("  <url>");
             sitemap.AppendLine($"    <loc>{baseUrl}/Home/Faq</loc>");
-            sitemap.AppendLine($"    <lastmod>{DateTime.Now:yyyy-MM-dd}</lastmod>");
+            sitemap.AppendLine($"    <lastmod>{DateTime.UtcNow:yyyy-MM-dd}</lastmod>");
             sitemap.AppendLine("    <changefreq>monthly</changefreq>");
             sitemap.AppendLine("    <priority>0.8</priority>");
             sitemap.AppendLine("  </url>");
@@ -71,7 +71,7 @@ namespace KLDShop.Controllers
             // Privacy page
             sitemap.AppendLine("  <url>");
             sitemap.AppendLine($"    <loc>{baseUrl}/Home/Privacy</loc>");
-            sitemap.AppendLine($"    <lastmod>{DateTime.Now:yyyy-MM-dd}</lastmod>");
+            sitemap.AppendLine($"    <lastmod>{DateTime.UtcNow:yyyy-MM-dd}</lastmod>");
             sitemap.AppendLine("    <changefreq>monthly</changefreq>");
             sitemap.AppendLine("    <priority>0.6</priority>");
             sitemap.AppendLine("  </url>");
@@ -79,7 +79,7 @@ namespace KLDShop.Controllers
             // Shipping Policy
             sitemap.AppendLine("  <url>");
             sitemap.AppendLine($"    <loc>{baseUrl}/Home/ShippingPolicy</loc>");
-            sitemap.AppendLine($"    <lastmod>{DateTime.Now:yyyy-MM-dd}</lastmod>");
+            sitemap.AppendLine($"    <lastmod>{DateTime.UtcNow:yyyy-MM-dd}</lastmod>");
             sitemap.AppendLine("    <changefreq>monthly</changefreq>");
             sitemap.AppendLine("    <priority>0.6</priority>");
             sitemap.AppendLine("  </url>");
@@ -87,7 +87,7 @@ namespace KLDShop.Controllers
             // Return Policy
             sitemap.AppendLine("  <url>");
             sitemap.AppendLine($"    <loc>{baseUrl}/Home/ReturnPolicy</loc>");
-            sitemap.AppendLine($"    <lastmod>{DateTime.Now:yyyy-MM-dd}</lastmod>");
+            sitemap.AppendLine($"    <lastmod>{DateTime.UtcNow:yyyy-MM-dd}</lastmod>");
             sitemap.AppendLine("    <changefreq>monthly</changefreq>");
             sitemap.AppendLine("    <priority>0.6</priority>");
             sitemap.AppendLine("  </url>");
@@ -126,3 +126,4 @@ namespace KLDShop.Controllers
         }
     }
 }
+

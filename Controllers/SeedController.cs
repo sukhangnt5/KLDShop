@@ -48,8 +48,8 @@ namespace KLDShop.Controllers
                         City = "Hà Nội",
                         IsAdmin = true,
                         IsActive = true,
-                        CreatedAt = DateTime.Now,
-                        UpdatedAt = DateTime.Now
+                        CreatedAt = DateTime.UtcNow,
+                        UpdatedAt = DateTime.UtcNow
                     },
                     new User
                     {
@@ -62,8 +62,8 @@ namespace KLDShop.Controllers
                         City = "TP.HCM",
                         IsAdmin = false,
                         IsActive = true,
-                        CreatedAt = DateTime.Now,
-                        UpdatedAt = DateTime.Now
+                        CreatedAt = DateTime.UtcNow,
+                        UpdatedAt = DateTime.UtcNow
                     },
                     new User
                     {
@@ -76,8 +76,8 @@ namespace KLDShop.Controllers
                         City = "Đà Nẵng",
                         IsAdmin = false,
                         IsActive = true,
-                        CreatedAt = DateTime.Now,
-                        UpdatedAt = DateTime.Now
+                        CreatedAt = DateTime.UtcNow,
+                        UpdatedAt = DateTime.UtcNow
                     }
                 };
 
@@ -132,10 +132,10 @@ namespace KLDShop.Controllers
                 // Thêm danh mục trước
                 var categories = new List<Category>
                 {
-                    new Category { CategoryName = "Máy Tính & Laptop", Description = "Laptop, máy tính để bàn", IsActive = true, CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now },
-                    new Category { CategoryName = "Phụ Kiện & Thiết Bị", Description = "Chuột, bàn phím, webcam", IsActive = true, CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now },
-                    new Category { CategoryName = "Màn Hình & Linh Kiện", Description = "Monitor, GPU, CPU, RAM, SSD", IsActive = true, CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now },
-                    new Category { CategoryName = "Âm Thanh", Description = "Tai nghe, loa", IsActive = true, CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now }
+                    new Category { CategoryName = "Máy Tính & Laptop", Description = "Laptop, máy tính để bàn", IsActive = true, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow },
+                    new Category { CategoryName = "Phụ Kiện & Thiết Bị", Description = "Chuột, bàn phím, webcam", IsActive = true, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow },
+                    new Category { CategoryName = "Màn Hình & Linh Kiện", Description = "Monitor, GPU, CPU, RAM, SSD", IsActive = true, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow },
+                    new Category { CategoryName = "Âm Thanh", Description = "Tai nghe, loa", IsActive = true, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow }
                 };
 
                 // Xóa danh mục cũ
@@ -164,8 +164,8 @@ namespace KLDShop.Controllers
                         CategoryId = categories[0].CategoryId,
                         IsActive = true,
                         Views = 150,
-                        CreatedAt = DateTime.Now,
-                        UpdatedAt = DateTime.Now
+                        CreatedAt = DateTime.UtcNow,
+                        UpdatedAt = DateTime.UtcNow
                     },
                     new Product
                     {
@@ -179,8 +179,8 @@ namespace KLDShop.Controllers
                         CategoryId = categories[1].CategoryId,
                         IsActive = true,
                         Views = 80,
-                        CreatedAt = DateTime.Now,
-                        UpdatedAt = DateTime.Now
+                        CreatedAt = DateTime.UtcNow,
+                        UpdatedAt = DateTime.UtcNow
                     },
                     new Product
                     {
@@ -194,8 +194,8 @@ namespace KLDShop.Controllers
                         CategoryId = categories[1].CategoryId,
                         IsActive = true,
                         Views = 120,
-                        CreatedAt = DateTime.Now,
-                        UpdatedAt = DateTime.Now
+                        CreatedAt = DateTime.UtcNow,
+                        UpdatedAt = DateTime.UtcNow
                     },
                     new Product
                     {
@@ -209,8 +209,8 @@ namespace KLDShop.Controllers
                         CategoryId = categories[2].CategoryId,
                         IsActive = true,
                         Views = 200,
-                        CreatedAt = DateTime.Now,
-                        UpdatedAt = DateTime.Now
+                        CreatedAt = DateTime.UtcNow,
+                        UpdatedAt = DateTime.UtcNow
                     },
                     new Product
                     {
@@ -224,8 +224,8 @@ namespace KLDShop.Controllers
                         CategoryId = categories[1].CategoryId,
                         IsActive = true,
                         Views = 90,
-                        CreatedAt = DateTime.Now,
-                        UpdatedAt = DateTime.Now
+                        CreatedAt = DateTime.UtcNow,
+                        UpdatedAt = DateTime.UtcNow
                     },
                     new Product
                     {
@@ -239,8 +239,8 @@ namespace KLDShop.Controllers
                         CategoryId = categories[2].CategoryId,
                         IsActive = true,
                         Views = 250,
-                        CreatedAt = DateTime.Now,
-                        UpdatedAt = DateTime.Now
+                        CreatedAt = DateTime.UtcNow,
+                        UpdatedAt = DateTime.UtcNow
                     },
                     new Product
                     {
@@ -254,8 +254,8 @@ namespace KLDShop.Controllers
                         CategoryId = categories[2].CategoryId,
                         IsActive = true,
                         Views = 110,
-                        CreatedAt = DateTime.Now,
-                        UpdatedAt = DateTime.Now
+                        CreatedAt = DateTime.UtcNow,
+                        UpdatedAt = DateTime.UtcNow
                     },
                     new Product
                     {
@@ -269,8 +269,8 @@ namespace KLDShop.Controllers
                         CategoryId = categories[3].CategoryId,
                         IsActive = true,
                         Views = 175,
-                        CreatedAt = DateTime.Now,
-                        UpdatedAt = DateTime.Now
+                        CreatedAt = DateTime.UtcNow,
+                        UpdatedAt = DateTime.UtcNow
                     },
                     new Product
                     {
@@ -284,8 +284,8 @@ namespace KLDShop.Controllers
                         CategoryId = categories[2].CategoryId,
                         IsActive = true,
                         Views = 300,
-                        CreatedAt = DateTime.Now,
-                        UpdatedAt = DateTime.Now
+                        CreatedAt = DateTime.UtcNow,
+                        UpdatedAt = DateTime.UtcNow
                     },
                     new Product
                     {
@@ -299,8 +299,8 @@ namespace KLDShop.Controllers
                         CategoryId = categories[2].CategoryId,
                         IsActive = true,
                         Views = 95,
-                        CreatedAt = DateTime.Now,
-                        UpdatedAt = DateTime.Now
+                        CreatedAt = DateTime.UtcNow,
+                        UpdatedAt = DateTime.UtcNow
                     },
                     new Product
                     {
@@ -314,8 +314,8 @@ namespace KLDShop.Controllers
                         CategoryId = categories[2].CategoryId,
                         IsActive = true,
                         Views = 88,
-                        CreatedAt = DateTime.Now,
-                        UpdatedAt = DateTime.Now
+                        CreatedAt = DateTime.UtcNow,
+                        UpdatedAt = DateTime.UtcNow
                     },
                     new Product
                     {
@@ -329,8 +329,8 @@ namespace KLDShop.Controllers
                         CategoryId = categories[2].CategoryId,
                         IsActive = true,
                         Views = 280,
-                        CreatedAt = DateTime.Now,
-                        UpdatedAt = DateTime.Now
+                        CreatedAt = DateTime.UtcNow,
+                        UpdatedAt = DateTime.UtcNow
                     }
                 };
 
@@ -471,3 +471,5 @@ namespace KLDShop.Controllers
         }
     }
 }
+
+
