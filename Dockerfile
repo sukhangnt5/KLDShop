@@ -30,13 +30,13 @@ RUN dotnet tool install --global dotnet-ef
 ENV PATH="${PATH}:/root/.dotnet/tools"
 
 # Create a startup script to handle PORT variable and run migrations
-RUN echo '#!/bin/sh\\n\\\
-if [ ! -z "$PORT" ]; then\\n\\\
-  export ASPNETCORE_URLS="http://+:$PORT"\\n\\\
-fi\\n\\\
-echo "Running database migrations..."\\n\\\
-dotnet ef database update --no-build || echo "Migration failed, continuing..."\\n\\\
-echo "Starting application..."\\n\\\
+RUN echo '#!/bin/sh\n\
+if [ ! -z "$PORT" ]; then\n\
+  export ASPNETCORE_URLS="http://+:$PORT"\n\
+fi\n\
+echo "Running database migrations..."\n\
+dotnet ef database update --no-build || echo "Migration failed, continuing..."\n\
+echo "Starting application..."\n\
 dotnet KLDShop.dll' > /app/start.sh && chmod +x /app/start.sh
 
 ENTRYPOINT ["/app/start.sh"]
