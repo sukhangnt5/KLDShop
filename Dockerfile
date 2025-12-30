@@ -4,11 +4,9 @@ WORKDIR /app
 
 # Copy csproj and restore dependencies
 COPY *.csproj ./
+COPY .config/dotnet-tools.json .config/
 RUN dotnet restore
-
-# Install EF Core tools
-RUN dotnet tool install --global dotnet-ef
-ENV PATH="${PATH}:/root/.dotnet/tools"
+RUN dotnet tool restore
 
 # Copy everything else and build
 COPY . ./
@@ -20,14 +18,14 @@ WORKDIR /app
 COPY --from=build /app/out .
 COPY --from=build /app/*.csproj ./
 COPY --from=build /app/Migrations ./Migrations
+COPY --from=build /app/.config/dotnet-tools.json .config/
 
 # Expose port (Railway will set PORT env variable)
 EXPOSE 8080
 ENV ASPNETCORE_URLS=http://+:8080
 
-# Install EF Core tools in runtime
-RUN dotnet tool install --global dotnet-ef
-ENV PATH="${PATH}:/root/.dotnet/tools"
+# Install EF Core tools from manifest
+RUN dotnet tool restore
 
 # Create a startup script to handle PORT variable and run migrations
 RUN echo '#!/bin/sh\n\
