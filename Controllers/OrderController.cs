@@ -399,9 +399,14 @@ namespace KLDShop.Controllers
 
                 return RedirectToAction("Checkout", "Order");
             }
+            catch (DbUpdateException dbEx)
+            {
+                _logger.LogError($"Database error in PaymentReturn: {dbEx.Message} - InnerException: {dbEx.InnerException?.Message} - StackTrace: {dbEx.StackTrace}");
+                return RedirectToAction("Checkout", "Order");
+            }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"VNPay return error: {ex.Message}");
+                _logger.LogError($"VNPay return error: {ex.Message} - {ex.StackTrace}");
                 return RedirectToAction("Checkout", "Order");
             }
         }

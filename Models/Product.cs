@@ -62,9 +62,9 @@ namespace KLDShop.Models
 
         public int Views { get; set; } = 0;
 
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
-        public DateTime UpdatedAt { get; set; } = DateTime.Now;
+        public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
         // Navigation properties
         public virtual ICollection<OrderDetail> OrderDetails { get; set; } = new List<OrderDetail>();

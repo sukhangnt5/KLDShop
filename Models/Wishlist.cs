@@ -14,7 +14,7 @@ namespace KLDShop.Models
         [Required]
         public int ProductId { get; set; }
 
-        public DateTime AddedDate { get; set; } = DateTime.Now;
+        public DateTime AddedDate { get; set; } = DateTime.UtcNow;
 
         // Navigation properties
         [ForeignKey("UserId")]

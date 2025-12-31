@@ -14,7 +14,7 @@ namespace KLDShop.Models
         [StringLength(50)]
         public string? OrderNumber { get; set; }
 
-        public DateTime OrderDate { get; set; } = DateTime.Now;
+        public DateTime OrderDate { get; set; } = DateTime.UtcNow;
 
         [DisplayFormat(DataFormatString = "{0:N0}")]
         public decimal TotalAmount { get; set; }
@@ -65,9 +65,9 @@ namespace KLDShop.Models
         [StringLength(4000)]
         public string? Notes { get; set; }
 
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
-        public DateTime UpdatedAt { get; set; } = DateTime.Now;
+        public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
         public DateTime? ShippedAt { get; set; }
 

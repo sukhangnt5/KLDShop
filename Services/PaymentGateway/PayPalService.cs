@@ -311,7 +311,7 @@ namespace KLDShop.Services.PaymentGateway
                     }
 
                     // Extract payment date from create_time
-                    var paymentDate = DateTime.Now;
+                    var paymentDate = DateTime.UtcNow;
                     if (root.TryGetProperty("create_time", out var createTimeProp))
                     {
                         var createTimeStr = createTimeProp.GetString();

@@ -52,9 +52,9 @@ namespace KLDShop.Models
 
         public bool IsAdmin { get; set; } = false;
 
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
-        public DateTime UpdatedAt { get; set; } = DateTime.Now;
+        public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
         public DateTime? LastLoginAt { get; set; }
 

@@ -17,7 +17,7 @@ namespace KLDShop.Models
         [StringLength(500)]
         public string? PreviewText { get; set; }
 
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         public DateTime? SentAt { get; set; }
 

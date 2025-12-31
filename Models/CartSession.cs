@@ -20,9 +20,9 @@ namespace KLDShop.Models
 
         public decimal? DiscountPrice { get; set; }
 
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
-        public DateTime UpdatedAt { get; set; } = DateTime.Now;
+        public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
         // Navigation properties
         public virtual User? User { get; set; }

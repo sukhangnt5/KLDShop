@@ -18,7 +18,7 @@ namespace KLDShop.Models
         [StringLength(100)]
         public string? LastName { get; set; }
 
-        public DateTime SubscribedAt { get; set; } = DateTime.Now;
+        public DateTime SubscribedAt { get; set; } = DateTime.UtcNow;
 
         public bool IsActive { get; set; } = true;
 

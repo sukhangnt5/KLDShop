@@ -27,7 +27,7 @@ namespace KLDShop.Models
         [DisplayFormat(DataFormatString = "{0:N0}")]
         public decimal TotalPrice { get; set; }
 
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         // Navigation properties
         [ForeignKey("OrderId")]

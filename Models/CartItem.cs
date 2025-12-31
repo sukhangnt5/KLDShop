@@ -21,7 +21,7 @@ namespace KLDShop.Models
         [DisplayFormat(DataFormatString = "{0:N0}")]
         public decimal? DiscountPrice { get; set; }
 
-        public DateTime AddedAt { get; set; } = DateTime.Now;
+        public DateTime AddedAt { get; set; } = DateTime.UtcNow;
 
         // Navigation property
         [ForeignKey("ProductId")]
