@@ -259,12 +259,20 @@
         @if (ViewBag.PaymentMethod == "PayPal")
         {
             <text>
-        paypal.Buttons({
-            createOrder: function(data, actions) {
-                let orderId = @(Model?.OrderId ?? 0);
-                let amount = "@(Model?.FinalAmount.ToString("F2"))";
-                
-                console.log('Creating PayPal order - OrderId:', orderId, 'Amount:', amount);
+        console.log('=== Initializing PayPal Buttons ===');
+        
+        if (typeof paypal === 'undefined') {
+            console.error('❌ PayPal SDK not loaded!');
+            alert('Lỗi: PayPal SDK chưa được tải. Vui lòng refresh trang.');
+        } else {
+            console.log('✅ PayPal SDK loaded successfully');
+            
+            paypal.Buttons({
+                createOrder: function(data, actions) {
+                    let orderId = @(Model?.OrderId ?? 0);
+                    let amount = "@(Model?.FinalAmount.ToString("F2", System.Globalization.CultureInfo.InvariantCulture))";
+                    
+                    console.log('Creating PayPal order - OrderId:', orderId, 'Amount:', amount);
                 
                 return actions.order.create({
                     purchase_units: [{
@@ -349,11 +357,17 @@
                     });
                 });
             },
-            onError: function(err) {
-                console.error('PayPal error:', err);
-                alert('Lỗi thanh toán PayPal. Vui lòng thử lại.');
-            }
-        }).render('#paypal-button-container');
+                onError: function(err) {
+                    console.error('PayPal error:', err);
+                    alert('Lỗi thanh toán PayPal. Vui lòng thử lại.');
+                }
+            }).render('#paypal-button-container').then(function() {
+                console.log('✅ PayPal button rendered successfully');
+            }).catch(function(err) {
+                console.error('❌ Failed to render PayPal button:', err);
+                alert('Không thể tải PayPal button. Vui lòng kiểm tra: 1) Client ID đã set đúng chưa, 2) Network connection, 3) Browser console logs');
+            });
+        }
             </text>
         }
     </script>

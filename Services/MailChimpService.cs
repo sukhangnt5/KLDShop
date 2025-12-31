@@ -108,7 +108,7 @@ namespace KLDShop.Services
                         PreviewText = previewText ?? subject,
                         FromName = fromName,
                         ReplyTo = replyTo,
-                        Title = $"{subject} - {DateTime.Now:yyyy-MM-dd HH:mm}"
+                        Title = $"{subject} - {DateTime.UtcNow:yyyy-MM-dd HH:mm}"
                     }
                 };
 
