@@ -254,8 +254,16 @@ namespace KLDShop.Controllers
 
             try
             {
-                // Create payment request
-                var returnUrl = _configuration["VNPay:ReturnUrl"] ?? Url.Action("PaymentReturn", "Order", null, Request.Scheme) ?? "";
+                // Create payment request - use dynamic URL based on current request
+                var returnUrl = Url.Action("PaymentReturn", "Order", null, Request.Scheme);
+                if (string.IsNullOrEmpty(returnUrl))
+                {
+                    // Fallback to configuration if URL generation fails
+                    returnUrl = _configuration["VNPay:ReturnUrl"] ?? "";
+                }
+                
+                _logger.LogInformation($"ProcessPayment - ReturnUrl: {returnUrl}");
+                
                 var paymentRequest = new PaymentRequest
                 {
                     OrderId = orderId,
