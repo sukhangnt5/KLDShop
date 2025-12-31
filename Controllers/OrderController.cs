@@ -325,12 +325,20 @@ namespace KLDShop.Controllers
                     }
 
                     var order = await _context.Orders
+                        .Include(o => o.Payment)
                         .Where(o => o.UserId == userId && o.Status == "Pending")
                         .OrderByDescending(o => o.OrderDate)
                         .FirstOrDefaultAsync();
                     
                     if (order != null)
                     {
+                        // Check if payment already exists for this order
+                        if (order.Payment != null)
+                        {
+                            System.Diagnostics.Debug.WriteLine($"Payment already exists for order {order.OrderId}, skipping duplicate creation");
+                            return RedirectToAction("Confirmation", new { id = order.OrderId });
+                        }
+                        
                         // Create payment record
                         var payment = new Payment
                         {
@@ -412,7 +420,9 @@ namespace KLDShop.Controllers
                 Order? order = null;
                 if (orderId > 0)
                 {
-                    order = await _context.Orders.FindAsync(orderId);
+                    order = await _context.Orders
+                        .Include(o => o.Payment)
+                        .FirstOrDefaultAsync(o => o.OrderId == orderId);
                     _logger.LogInformation($"Order found by orderId {orderId}: {order != null}");
                 }
 
@@ -424,6 +434,7 @@ namespace KLDShop.Controllers
                     if (userIdForPayPal != null)
                     {
                         order = await _context.Orders
+                            .Include(o => o.Payment)
                             .Where(o => o.UserId == userIdForPayPal && o.Status == "Pending")
                             .OrderByDescending(o => o.OrderDate)
                             .FirstOrDefaultAsync();
@@ -435,6 +446,13 @@ namespace KLDShop.Controllers
                 {
                     _logger.LogWarning($"No order found - redirecting to Checkout");
                     return RedirectToAction("Checkout", "Order");
+                }
+                
+                // Check if payment already exists for this order
+                if (order.Payment != null)
+                {
+                    _logger.LogInformation($"Payment already exists for order {order.OrderId}, skipping duplicate creation");
+                    return RedirectToAction("Confirmation", new { id = order.OrderId });
                 }
                 
                 _logger.LogInformation($"Processing PayPal return for order {order.OrderId}");
@@ -480,7 +498,7 @@ namespace KLDShop.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError($"PayPal return error: {ex.Message}");
+                _logger.LogError($"PayPal return error: {ex.Message} - {ex.StackTrace}");
                 return RedirectToAction("Checkout", "Order");
             }
         }
@@ -500,11 +518,19 @@ namespace KLDShop.Controllers
 
                 var order = await _context.Orders
                     .Include(o => o.OrderDetails)
+                    .Include(o => o.Payment)
                     .FirstOrDefaultAsync(o => o.OrderId == orderId);
 
                 if (order == null)
                 {
                     return Json(new { success = false, message = "Đơn hàng không tồn tại" });
+                }
+
+                // Check if payment already exists for this order
+                if (order.Payment != null)
+                {
+                    _logger.LogInformation($"Payment already exists for order {orderId}, skipping duplicate creation");
+                    return Json(new { success = true, message = "Thanh toán đã được xử lý", orderId = orderId });
                 }
 
                 // Verify payment details from PayPal
@@ -555,7 +581,7 @@ namespace KLDShop.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Error in ApprovePayPalPayment: {ex.Message}");
+                _logger.LogError($"Error in ApprovePayPalPayment: {ex.Message} - {ex.StackTrace}");
                 return Json(new { success = false, message = $"Lỗi: {ex.Message}" });
             }
         }
