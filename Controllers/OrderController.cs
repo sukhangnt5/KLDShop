@@ -226,6 +226,10 @@ namespace KLDShop.Controllers
 
             ViewBag.OrderId = orderId;
             ViewBag.PaymentMethod = paymentMethod;
+            ViewBag.PayPalClientId = _configuration["PayPal:ClientId"];
+            
+            _logger.LogInformation($"Payment page - OrderId: {orderId}, PaymentMethod: {paymentMethod}, PayPalClientId: {ViewBag.PayPalClientId}");
+            
             return View(order);
         }
 
