@@ -166,8 +166,7 @@
 </style>
 
 @{
-    var paypalClientId = Context.RequestServices.GetService(typeof(Microsoft.Extensions.Configuration.IConfiguration)) as Microsoft.Extensions.Configuration.IConfiguration;
-    var clientId = paypalClientId?["PayPal:ClientId"] ?? "YOUR_PAYPAL_CLIENT_ID";
+    var clientId = ViewBag.PayPalClientId as string ?? "YOUR_PAYPAL_CLIENT_ID";
 }
 
 @section Scripts {
