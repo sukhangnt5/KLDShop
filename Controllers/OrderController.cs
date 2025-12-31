@@ -87,6 +87,8 @@ namespace KLDShop.Controllers
         {
             try
             {
+                _logger.LogInformation($"ConfirmOrder called - PaymentMethod: {paymentMethod}");
+                
                 var cart = GetCartFromSession();
                 if (!cart.Any())
                 {
@@ -104,11 +106,14 @@ namespace KLDShop.Controllers
                     return Json(new { success = false, message = "Vui lòng chọn phương thức thanh toán" });
                 }
 
-                // Generate order number
-                order.OrderNumber = $"ORD-{DateTime.UtcNow:yyyyMMddHHmmss}";
+                // Generate unique order number with random component
+                var random = new Random();
+                order.OrderNumber = $"ORD-{DateTime.UtcNow:yyyyMMddHHmmss}-{random.Next(1000, 9999)}";
                 order.OrderDate = DateTime.UtcNow;
                 order.Status = "Pending";
                 order.PaymentStatus = paymentMethod == "Cash" ? "Pending" : "Unpaid";
+                
+                _logger.LogInformation($"Generated OrderNumber: {order.OrderNumber}");
 
                 // Calculate totals and verify stock availability
                 decimal totalAmount = 0;
@@ -142,6 +147,8 @@ namespace KLDShop.Controllers
                 // Create order
                 _context.Orders.Add(order);
                 await _context.SaveChangesAsync();
+                
+                _logger.LogInformation($"Order created successfully - OrderId: {order.OrderId}");
 
                 // Create order details
                 foreach (var item in cart)
@@ -168,6 +175,8 @@ namespace KLDShop.Controllers
                 }
 
                 await _context.SaveChangesAsync();
+                
+                _logger.LogInformation($"Order details created successfully - OrderId: {order.OrderId}, Items: {cart.Count}");
 
                 // Clear cart
                 HttpContext.Session.Remove(CartSessionKey);
@@ -185,8 +194,14 @@ namespace KLDShop.Controllers
                 // Nếu không, trả về orderId để redirect sang Payment
                 return Json(new { success = true, message = "Đơn hàng đã được tạo", orderId = order.OrderId, paymentMethod = paymentMethod });
             }
+            catch (DbUpdateException dbEx)
+            {
+                _logger.LogError($"Database error in ConfirmOrder: {dbEx.Message} - InnerException: {dbEx.InnerException?.Message} - StackTrace: {dbEx.StackTrace}");
+                return Json(new { success = false, message = $"Lỗi cơ sở dữ liệu: {dbEx.InnerException?.Message ?? dbEx.Message}" });
+            }
             catch (Exception ex)
             {
+                _logger.LogError($"Error in ConfirmOrder: {ex.Message} - StackTrace: {ex.StackTrace}");
                 return Json(new { success = false, message = "Lỗi: " + ex.Message });
             }
         }
@@ -496,6 +511,11 @@ namespace KLDShop.Controllers
 
                 return RedirectToAction("Confirmation", new { id = order.OrderId });
             }
+            catch (DbUpdateException dbEx)
+            {
+                _logger.LogError($"Database error in PayPalReturn: {dbEx.Message} - InnerException: {dbEx.InnerException?.Message} - StackTrace: {dbEx.StackTrace}");
+                return RedirectToAction("Checkout", "Order");
+            }
             catch (Exception ex)
             {
                 _logger.LogError($"PayPal return error: {ex.Message} - {ex.StackTrace}");
@@ -578,6 +598,11 @@ namespace KLDShop.Controllers
                 _logger.LogInformation($"PayPal payment approved and saved - OrderId: {orderId}, TransactionId: {transactionId}");
 
                 return Json(new { success = true, message = "Thanh toán thành công", orderId = orderId });
+            }
+            catch (DbUpdateException dbEx)
+            {
+                _logger.LogError($"Database error in ApprovePayPalPayment: {dbEx.Message} - InnerException: {dbEx.InnerException?.Message} - StackTrace: {dbEx.StackTrace}");
+                return Json(new { success = false, message = $"Lỗi cơ sở dữ liệu: {dbEx.InnerException?.Message ?? dbEx.Message}" });
             }
             catch (Exception ex)
             {
