@@ -5,6 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - KLDShop - Cửa Hàng Trực Tuyến</title>
     
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-NRMNMF2XQN"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-NRMNMF2XQN');
+    </script>
+    
     <!-- SEO Meta Tags -->
     <meta name="description" content="@(ViewData["MetaDescription"] ?? "KLDShop - Cửa hàng trực tuyến uy tín chuyên cung cấp sản phẩm chất lượng cao với giá tốt nhất thị trường. Giao hàng nhanh chóng toàn quốc, đổi trả dễ dàng trong 30 ngày. Mua sắm an toàn và tiện lợi.")" />
     <meta name="keywords" content="@(ViewData["MetaKeywords"] ?? "mua sắm online, cửa hàng trực tuyến, sản phẩm chất lượng, KLDShop")" />
