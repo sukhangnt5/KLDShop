@@ -170,10 +170,21 @@
 }
 
 @section Scripts {
+    <script>
+        console.log('=== Payment Page Loaded ===');
+        console.log('Payment Method:', '@ViewBag.PaymentMethod');
+        console.log('PayPal ClientId:', '@clientId');
+        console.log('Order ID:', @(Model?.OrderId ?? 0));
+        console.log('Final Amount:', '@(Model?.FinalAmount.ToString("F2", System.Globalization.CultureInfo.InvariantCulture))');
+    </script>
+    
     <!-- PayPal Checkout Script -->
     @if (ViewBag.PaymentMethod == "PayPal")
     {
         <script src="https://www.paypal.com/sdk/js?client-id=@clientId&currency=USD"></script>
+        <script>
+            console.log('✅ PayPal SDK script tag added');
+        </script>
     }
 
     <script>
