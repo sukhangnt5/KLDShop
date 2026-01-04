@@ -70,12 +70,32 @@
                             </td>
                             <td>@user.CreatedAt.ToString("dd/MM/yyyy")</td>
                             <td>
-                                @if (!user.IsAdmin)
-                                {
-                                    <button class="btn btn-sm btn-warning" onclick="toggleUserStatus(@user.UserId)">
-                                        @(user.IsActive ? "Vô Hiệu" : "Kích Hoạt")
-                                    </button>
-                                }
+                                <div class="btn-group" role="group">
+                                    @if (!user.IsAdmin)
+                                    {
+                                        <button class="btn btn-sm btn-warning" onclick="toggleUserStatus(@user.UserId)" title="Thay đổi trạng thái hoạt động">
+                                            <i class="bi bi-power"></i> @(user.IsActive ? "Vô Hiệu" : "Kích Hoạt")
+                                        </button>
+                                    }
+                                    
+                                    @if (user.UserId != Context.Session.GetInt32("UserId"))
+                                    {
+                                        <button class="btn btn-sm @(user.IsAdmin ? "btn-danger" : "btn-info")" 
+                                                onclick="toggleAdminRole(@user.UserId, @user.IsAdmin.ToString().ToLower())" 
+                                                title="Thay đổi quyền">
+                                            <i class="bi @(user.IsAdmin ? "bi-arrow-down-circle" : "bi-arrow-up-circle")"></i> 
+                                            @(user.IsAdmin ? "Hạ User" : "Lên Admin")
+                                        </button>
+                                        
+                                        <button class="btn btn-sm btn-danger" onclick="deleteUser(@user.UserId)" title="Xóa người dùng">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-info">Bạn</span>
+                                    }
+                                </div>
                             </td>
                         </tr>
                     }
@@ -150,6 +170,63 @@
                     }
                 })
                 .catch(error => alert('Lỗi: ' + error));
+            }
+        }
+
+        function toggleAdminRole(userId, isCurrentlyAdmin) {
+            const action = isCurrentlyAdmin ? 'hạ xuống User' : 'lên làm Admin';
+            const confirmMsg = `Bạn có chắc chắn muốn ${action} cho người dùng này?`;
+            
+            if (confirm(confirmMsg)) {
+                fetch('@Url.Action("ToggleAdminRole", "Admin")', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
+                    },
+                    body: JSON.stringify({ userId: userId })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(data.message);
+                        location.reload();
+                    } else {
+                        alert('Lỗi: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Lỗi: Không thể kết nối đến server');
+                });
+            }
+        }
+
+        function deleteUser(userId) {
+            if (confirm('⚠️ CẢNH BÁO: Bạn có chắc chắn muốn XÓA người dùng này?\n\nHành động này KHÔNG THỂ HOÀN TÁC!')) {
+                if (confirm('Xác nhận lần cuối: Bạn thực sự muốn xóa người dùng này?')) {
+                    fetch('@Url.Action("DeleteUser", "Admin")', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
+                        },
+                        body: JSON.stringify({ userId: userId })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert(data.message);
+                            location.reload();
+                        } else {
+                            alert('Lỗi: ' + data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Lỗi: Không thể kết nối đến server');
+                    });
+                }
             }
         }
     </script>

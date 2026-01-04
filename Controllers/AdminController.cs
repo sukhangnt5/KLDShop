@@ -436,6 +436,82 @@ namespace KLDShop.Controllers
             return Json(new { success = true, message = $"Người dùng đã {(user.IsActive ? "kích hoạt" : "vô hiệu hóa")}" });
         }
 
+        // POST: Toggle Admin Role
+        [HttpPost]
+        public async Task<IActionResult> ToggleAdminRole(int userId)
+        {
+            var redirect = RedirectIfNotAdmin();
+            if (redirect != null) return Json(new { success = false, message = "Unauthorized" });
+
+            try
+            {
+                var currentUserId = HttpContext.Session.GetInt32("UserId");
+                if (currentUserId == userId)
+                {
+                    return Json(new { success = false, message = "Không thể thay đổi quyền của chính bạn" });
+                }
+
+                var user = await _context.Users.FindAsync(userId);
+                if (user == null)
+                {
+                    return Json(new { success = false, message = "Người dùng không tồn tại" });
+                }
+
+                user.IsAdmin = !user.IsAdmin;
+                user.UpdatedAt = DateTime.UtcNow;
+                _context.Users.Update(user);
+                await _context.SaveChangesAsync();
+
+                string roleMessage = user.IsAdmin ? "Admin" : "User";
+                return Json(new { success = true, message = $"Đã chuyển quyền thành {roleMessage}", isAdmin = user.IsAdmin });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error toggling admin role");
+                return Json(new { success = false, message = "Có lỗi xảy ra khi thay đổi quyền" });
+            }
+        }
+
+        // POST: Delete User
+        [HttpPost]
+        public async Task<IActionResult> DeleteUser(int userId)
+        {
+            var redirect = RedirectIfNotAdmin();
+            if (redirect != null) return Json(new { success = false, message = "Unauthorized" });
+
+            try
+            {
+                var currentUserId = HttpContext.Session.GetInt32("UserId");
+                if (currentUserId == userId)
+                {
+                    return Json(new { success = false, message = "Không thể xóa chính bạn" });
+                }
+
+                var user = await _context.Users.FindAsync(userId);
+                if (user == null)
+                {
+                    return Json(new { success = false, message = "Người dùng không tồn tại" });
+                }
+
+                // Check if user has orders
+                var hasOrders = await _context.Orders.AnyAsync(o => o.UserId == userId);
+                if (hasOrders)
+                {
+                    return Json(new { success = false, message = "Không thể xóa người dùng đã có đơn hàng. Vui lòng vô hiệu hóa thay vì xóa." });
+                }
+
+                _context.Users.Remove(user);
+                await _context.SaveChangesAsync();
+
+                return Json(new { success = true, message = "Đã xóa người dùng thành công" });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error deleting user");
+                return Json(new { success = false, message = "Có lỗi xảy ra khi xóa người dùng" });
+            }
+        }
+
         // GET: Thống kê
         public async Task<IActionResult> Statistics()
         {
